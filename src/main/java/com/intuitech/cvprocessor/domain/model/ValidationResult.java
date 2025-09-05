@@ -1,0 +1,69 @@
+package com.intuitech.cvprocessor.domain.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+/**
+ * Entity representing validation results for extracted CV fields
+ * 
+ * This entity stores the results of business rule validation
+ * for each extracted field from CV documents.
+ */
+@Entity
+@Table(name = "validation_results")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ValidationResult {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "extracted_fields_id", nullable = false)
+    private ExtractedFields extractedFields;
+
+    @Column(name = "work_experience_valid")
+    private Boolean workExperienceValid;
+
+    @Column(name = "work_experience_message", columnDefinition = "TEXT")
+    private String workExperienceMessage;
+
+    @Column(name = "skills_valid")
+    private Boolean skillsValid;
+
+    @Column(name = "skills_message", columnDefinition = "TEXT")
+    private String skillsMessage;
+
+    @Column(name = "languages_valid")
+    private Boolean languagesValid;
+
+    @Column(name = "languages_message", columnDefinition = "TEXT")
+    private String languagesMessage;
+
+    @Column(name = "profile_valid")
+    private Boolean profileValid;
+
+    @Column(name = "profile_message", columnDefinition = "TEXT")
+    private String profileMessage;
+
+    @Column(name = "overall_valid")
+    private Boolean overallValid;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+}
