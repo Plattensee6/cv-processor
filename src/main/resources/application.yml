@@ -1,0 +1,135 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  application:
+    name: cv-processor
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:cvprocessor}
+    username: ${POSTGRES_USER:cvuser}
+    password: ${POSTGRES_PASSWORD:cvpass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+huggingface:
+  api-key: ${HUGGINGFACE_API_KEY:}
+  model: ${HUGGINGFACE_MODEL:openai/gpt-4.1}
+  max-tokens: ${HUGGINGFACE_MAX_TOKENS:2000}
+  temperature: ${HUGGINGFACE_TEMPERATURE:0.1}
+  timeout: ${HUGGINGFACE_TIMEOUT:60}
+
+file:
+  upload:
+    max-size: ${FILE_MAX_SIZE:10MB}
+    allowed-types: ${FILE_ALLOWED_TYPES:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document}
+
+logging:
+  level:
+    com.intuitech: DEBUG
+    org.springframework.web: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      huggingface-extraction:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+  retry:
+    instances:
+      huggingface-extraction:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:cvprocessor}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+huggingface:
+  api-key: ${HUGGINGFACE_API_KEY}
+  model: ${HUGGINGFACE_MODEL:openai/gpt-4.1}
+  max-tokens: ${HUGGINGFACE_MAX_TOKENS:2000}
+  temperature: ${HUGGINGFACE_TEMPERATURE:0.1}
+  timeout: ${HUGGINGFACE_TIMEOUT:60}
+
+file:
+  upload:
+    max-size: ${FILE_MAX_SIZE:10MB}
+    allowed-types: ${FILE_ALLOWED_TYPES:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document}
+
+logging:
+  level:
+    com.intuitech: INFO
+    org.springframework.web: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      huggingface-extraction:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+  retry:
+    instances:
+      huggingface-extraction:
+        max-attempts: 3
+        wait-duration: 5s
+        exponential-backoff-multiplier: 2
