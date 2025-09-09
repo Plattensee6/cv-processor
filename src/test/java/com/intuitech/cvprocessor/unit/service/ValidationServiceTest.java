@@ -62,13 +62,13 @@ class ValidationServiceTest {
     void shouldSuccessfullyValidateAllFieldsWhenAllValidatorsPass() throws Exception {
         // Given
         WorkExperienceValidator.ValidationResult workExpResult = 
-            new WorkExperienceValidator.ValidationResult(true, "Work experience is valid");
+            WorkExperienceValidator.ValidationResult.valid("Work experience is valid");
         SkillsValidator.ValidationResult skillsResult = 
-            new SkillsValidator.ValidationResult(true, "Skills are valid");
+            SkillsValidator.ValidationResult.valid("Skills are valid");
         LanguagesValidator.ValidationResult languagesResult = 
-            new LanguagesValidator.ValidationResult(true, "Languages are valid");
+            LanguagesValidator.ValidationResult.valid("Languages are valid");
         ProfileValidator.ValidationResult profileResult = 
-            new ProfileValidator.ValidationResult(true, "Profile is valid");
+            ProfileValidator.ValidationResult.valid("Profile is valid");
 
         when(workExperienceValidator.validate(validExtractedFields)).thenReturn(workExpResult);
         when(skillsValidator.validate(validExtractedFields)).thenReturn(skillsResult);
@@ -97,13 +97,13 @@ class ValidationServiceTest {
     void shouldCreateValidationResultWithCorrectOverallValidityWhenSomeValidatorsFail() throws Exception {
         // Given
         WorkExperienceValidator.ValidationResult workExpResult = 
-            new WorkExperienceValidator.ValidationResult(true, "Work experience is valid");
+            WorkExperienceValidator.ValidationResult.valid("Work experience is valid");
         SkillsValidator.ValidationResult skillsResult = 
-            new SkillsValidator.ValidationResult(false, "Skills are invalid");
+            SkillsValidator.ValidationResult.invalid("Skills are invalid");
         LanguagesValidator.ValidationResult languagesResult = 
-            new LanguagesValidator.ValidationResult(true, "Languages are valid");
+            LanguagesValidator.ValidationResult.valid("Languages are valid");
         ProfileValidator.ValidationResult profileResult = 
-            new ProfileValidator.ValidationResult(false, "Profile is invalid");
+            ProfileValidator.ValidationResult.invalid("Profile is invalid");
 
         when(workExperienceValidator.validate(validExtractedFields)).thenReturn(workExpResult);
         when(skillsValidator.validate(validExtractedFields)).thenReturn(skillsResult);
@@ -145,13 +145,13 @@ class ValidationServiceTest {
     void shouldHandleRepositorySaveException() throws Exception {
         // Given
         WorkExperienceValidator.ValidationResult workExpResult = 
-            new WorkExperienceValidator.ValidationResult(true, "Work experience is valid");
+            WorkExperienceValidator.ValidationResult.valid("Work experience is valid");
         SkillsValidator.ValidationResult skillsResult = 
-            new SkillsValidator.ValidationResult(true, "Skills are valid");
+            SkillsValidator.ValidationResult.valid("Skills are valid");
         LanguagesValidator.ValidationResult languagesResult = 
-            new LanguagesValidator.ValidationResult(true, "Languages are valid");
+            LanguagesValidator.ValidationResult.valid("Languages are valid");
         ProfileValidator.ValidationResult profileResult = 
-            new ProfileValidator.ValidationResult(true, "Profile is valid");
+            ProfileValidator.ValidationResult.valid("Profile is valid");
 
         when(workExperienceValidator.validate(validExtractedFields)).thenReturn(workExpResult);
         when(skillsValidator.validate(validExtractedFields)).thenReturn(skillsResult);
@@ -201,13 +201,13 @@ class ValidationServiceTest {
     void shouldCallAllValidatorsInCorrectOrder() throws Exception {
         // Given
         WorkExperienceValidator.ValidationResult workExpResult = 
-            new WorkExperienceValidator.ValidationResult(true, "Work experience is valid");
+            WorkExperienceValidator.ValidationResult.valid("Work experience is valid");
         SkillsValidator.ValidationResult skillsResult = 
-            new SkillsValidator.ValidationResult(true, "Skills are valid");
+            SkillsValidator.ValidationResult.valid("Skills are valid");
         LanguagesValidator.ValidationResult languagesResult = 
-            new LanguagesValidator.ValidationResult(true, "Languages are valid");
+            LanguagesValidator.ValidationResult.valid("Languages are valid");
         ProfileValidator.ValidationResult profileResult = 
-            new ProfileValidator.ValidationResult(true, "Profile is valid");
+            ProfileValidator.ValidationResult.valid("Profile is valid");
 
         when(workExperienceValidator.validate(validExtractedFields)).thenReturn(workExpResult);
         when(skillsValidator.validate(validExtractedFields)).thenReturn(skillsResult);
@@ -232,13 +232,13 @@ class ValidationServiceTest {
     void shouldCreateValidationResultWithAllValidatorResults() throws Exception {
         // Given
         WorkExperienceValidator.ValidationResult workExpResult = 
-            new WorkExperienceValidator.ValidationResult(true, "Work experience is valid");
+            WorkExperienceValidator.ValidationResult.valid("Work experience is valid");
         SkillsValidator.ValidationResult skillsResult = 
-            new SkillsValidator.ValidationResult(false, "Skills are invalid");
+            SkillsValidator.ValidationResult.invalid("Skills are invalid");
         LanguagesValidator.ValidationResult languagesResult = 
-            new LanguagesValidator.ValidationResult(true, "Languages are valid");
+            LanguagesValidator.ValidationResult.valid("Languages are valid");
         ProfileValidator.ValidationResult profileResult = 
-            new ProfileValidator.ValidationResult(false, "Profile is invalid");
+            ProfileValidator.ValidationResult.invalid("Profile is invalid");
 
         when(workExperienceValidator.validate(validExtractedFields)).thenReturn(workExpResult);
         when(skillsValidator.validate(validExtractedFields)).thenReturn(skillsResult);

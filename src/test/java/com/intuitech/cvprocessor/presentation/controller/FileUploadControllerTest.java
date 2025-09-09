@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Unit tests for FileUploadController
  */
-@WebMvcTest(FileUploadController.class)
+@WebMvcTest(controllers = FileUploadController.class, excludeAutoConfiguration = org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class)
 class FileUploadControllerTest {
 
     @Autowired

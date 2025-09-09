@@ -57,14 +57,14 @@ class CVProcessingRequestRepositoryTest {
     @DisplayName("Should find all requests by status")
     void shouldFindAllRequestsByStatus() {
         // When
-        List<CVProcessingRequest> pendingRequests = repository.findByStatus(CVProcessingRequest.ProcessingStatus.PENDING);
+        List<CVProcessingRequest> pendingRequests = repository.findByStatus(CVProcessingRequest.ProcessingStatus.UPLOADED);
         List<CVProcessingRequest> completedRequests = repository.findByStatus(CVProcessingRequest.ProcessingStatus.COMPLETED);
         List<CVProcessingRequest> failedRequests = repository.findByStatus(CVProcessingRequest.ProcessingStatus.FAILED);
 
         // Then
         assertThat(pendingRequests).hasSize(1);
         assertThat(pendingRequests.get(0).getFileName()).isEqualTo("pending-cv.pdf");
-        assertThat(pendingRequests.get(0).getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.PENDING);
+        assertThat(pendingRequests.get(0).getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
 
         assertThat(completedRequests).hasSize(1);
         assertThat(completedRequests.get(0).getFileName()).isEqualTo("completed-cv.pdf");
@@ -84,7 +84,7 @@ class CVProcessingRequestRepositoryTest {
         // Then
         assertThat(foundRequest).isNotNull();
         assertThat(foundRequest.getFileName()).isEqualTo("pending-cv.pdf");
-        assertThat(foundRequest.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.PENDING);
+        assertThat(foundRequest.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
     }
 
     @Test
@@ -114,7 +114,7 @@ class CVProcessingRequestRepositoryTest {
         // Then
         assertThat(retrievedRequest).isPresent();
         assertThat(retrievedRequest.get().getFileName()).isEqualTo("new-cv.pdf");
-        assertThat(retrievedRequest.get().getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.PENDING);
+        assertThat(retrievedRequest.get().getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
     }
 
     @Test
@@ -169,7 +169,7 @@ class CVProcessingRequestRepositoryTest {
     @DisplayName("Should count requests by status")
     void shouldCountRequestsByStatus() {
         // When
-        long pendingCount = repository.findByStatus(CVProcessingRequest.ProcessingStatus.PENDING).size();
+        long pendingCount = repository.findByStatus(CVProcessingRequest.ProcessingStatus.UPLOADED).size();
         long completedCount = repository.findByStatus(CVProcessingRequest.ProcessingStatus.COMPLETED).size();
         long failedCount = repository.findByStatus(CVProcessingRequest.ProcessingStatus.FAILED).size();
 
@@ -202,7 +202,7 @@ class CVProcessingRequestRepositoryTest {
         request.setErrorMessage("Some error message");
 
         // When
-        CVProcessingRequest savedRequest = repository.save(request);
+        repository.save(request);
         entityManager.flush();
         entityManager.clear();
 

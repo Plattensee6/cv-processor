@@ -64,7 +64,7 @@ class ValidationResultRepositoryTest {
         // Then
         assertThat(foundResult).isPresent();
         assertThat(foundResult.get().getValid()).isTrue();
-        assertThat(foundResult.get().getValidationMessage()).isEqualTo("Validation successful");
+        assertThat(foundResult.get().getWorkExperienceMessage()).isEqualTo("Work experience validation successful");
         assertThat(foundResult.get().getExtractedFields().getId()).isEqualTo(testExtractedFields.getId());
     }
 
@@ -93,7 +93,7 @@ class ValidationResultRepositoryTest {
         ValidationResult newResult = MockDataFactory.createValidValidationResult();
         newResult.setExtractedFields(newFields);
         newResult.setValid(false);
-        newResult.setValidationMessage("Validation failed");
+        newResult.setWorkExperienceMessage("Validation failed");
 
         // When
         ValidationResult savedResult = repository.save(newResult);
@@ -105,7 +105,7 @@ class ValidationResultRepositoryTest {
         // Then
         assertThat(retrievedResult).isPresent();
         assertThat(retrievedResult.get().getValid()).isFalse();
-        assertThat(retrievedResult.get().getValidationMessage()).isEqualTo("Validation failed");
+        assertThat(retrievedResult.get().getWorkExperienceMessage()).isEqualTo("Validation failed");
         assertThat(retrievedResult.get().getExtractedFields().getId()).isEqualTo(newFields.getId());
     }
 
@@ -118,7 +118,7 @@ class ValidationResultRepositoryTest {
 
         // When
         result.setValid(false);
-        result.setValidationMessage("Updated validation message");
+        result.setWorkExperienceMessage("Updated validation message");
         repository.save(result);
         entityManager.flush();
         entityManager.clear();
@@ -127,7 +127,7 @@ class ValidationResultRepositoryTest {
         Optional<ValidationResult> updatedResult = repository.findByExtractedFieldsId(testExtractedFields.getId());
         assertThat(updatedResult).isPresent();
         assertThat(updatedResult.get().getValid()).isFalse();
-        assertThat(updatedResult.get().getValidationMessage()).isEqualTo("Updated validation message");
+        assertThat(updatedResult.get().getWorkExperienceMessage()).isEqualTo("Updated validation message");
     }
 
     @Test
@@ -189,7 +189,7 @@ class ValidationResultRepositoryTest {
         ValidationResult result = MockDataFactory.createValidValidationResult();
         result.setExtractedFields(fields);
         result.setValid(true);
-        result.setValidationMessage("All validations passed");
+        result.setWorkExperienceMessage("All validations passed");
         result.setErrors(List.of());
         result.setWarnings(List.of("Minor formatting issue"));
 
@@ -204,7 +204,7 @@ class ValidationResultRepositoryTest {
         ValidationResult retrieved = retrievedResult.get();
         
         assertThat(retrieved.getValid()).isTrue();
-        assertThat(retrieved.getValidationMessage()).isEqualTo("All validations passed");
+        assertThat(retrieved.getWorkExperienceMessage()).isEqualTo("All validations passed");
         assertThat(retrieved.getErrors()).isEmpty();
         assertThat(retrieved.getWarnings()).containsExactly("Minor formatting issue");
         assertThat(retrieved.getExtractedFields().getId()).isEqualTo(fields.getId());
@@ -225,7 +225,7 @@ class ValidationResultRepositoryTest {
         ValidationResult result = MockDataFactory.createInvalidValidationResult();
         result.setExtractedFields(fields);
         result.setValid(false);
-        result.setValidationMessage("Validation failed");
+        result.setWorkExperienceMessage("Validation failed");
         result.setErrors(List.of("Full name is required", "Email format is invalid"));
         result.setWarnings(List.of("Phone number format could be improved"));
 
@@ -240,7 +240,7 @@ class ValidationResultRepositoryTest {
         ValidationResult retrieved = retrievedResult.get();
         
         assertThat(retrieved.getValid()).isFalse();
-        assertThat(retrieved.getValidationMessage()).isEqualTo("Validation failed");
+        assertThat(retrieved.getWorkExperienceMessage()).isEqualTo("Validation failed");
         assertThat(retrieved.getErrors()).containsExactly("Full name is required", "Email format is invalid");
         assertThat(retrieved.getWarnings()).containsExactly("Phone number format could be improved");
     }
@@ -255,7 +255,7 @@ class ValidationResultRepositoryTest {
         assertThat(foundResult).isPresent();
         assertThat(foundResult.get().getExtractedFields()).isNotNull();
         assertThat(foundResult.get().getExtractedFields().getId()).isEqualTo(testExtractedFields.getId());
-        assertThat(foundResult.get().getExtractedFields().getFullName()).isEqualTo("John Doe");
+        assertThat(foundResult.get().getExtractedFields().getProfile()).contains("software engineer");
     }
 
     @Test
@@ -273,7 +273,7 @@ class ValidationResultRepositoryTest {
         ValidationResult result = new ValidationResult();
         result.setExtractedFields(fields);
         result.setValid(false);
-        result.setValidationMessage(null);
+        result.setWorkExperienceMessage(null);
         result.setErrors(null);
         result.setWarnings(null);
 
@@ -288,8 +288,8 @@ class ValidationResultRepositoryTest {
         ValidationResult retrieved = retrievedResult.get();
         
         assertThat(retrieved.getValid()).isFalse();
-        assertThat(retrieved.getValidationMessage()).isNull();
-        assertThat(retrieved.getErrors()).isNull();
-        assertThat(retrieved.getWarnings()).isNull();
+        assertThat(retrieved.getWorkExperienceMessage()).isNull();
+        assertThat(retrieved.getErrors()).isEmpty();
+        assertThat(retrieved.getWarnings()).isEmpty();
     }
 }

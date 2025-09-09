@@ -2,20 +2,14 @@ package com.intuitech.cvprocessor.infrastructure.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for FileValidationService
  */
-@SpringBootTest
-@TestPropertySource(properties = {
-        "file.upload.max-size=5MB",
-        "file.upload.allowed-types=application/pdf,text/plain"
-})
 class FileValidationServiceTest {
 
     private FileValidationService fileValidationService;
@@ -23,6 +17,9 @@ class FileValidationServiceTest {
     @BeforeEach
     void setUp() {
         fileValidationService = new FileValidationService();
+        // Set test properties using reflection
+        ReflectionTestUtils.setField(fileValidationService, "maxFileSize", "5MB");
+        ReflectionTestUtils.setField(fileValidationService, "allowedTypes", "application/pdf,text/plain");
     }
 
     @Test

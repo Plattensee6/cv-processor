@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 
  * Tests the health check endpoints to ensure they return proper responses.
  */
-@WebMvcTest(HealthController.class)
+@WebMvcTest(controllers = HealthController.class, excludeAutoConfiguration = org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class)
 class HealthControllerTest {
 
     @Autowired

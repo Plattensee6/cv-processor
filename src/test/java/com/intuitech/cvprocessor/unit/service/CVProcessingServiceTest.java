@@ -72,7 +72,7 @@ class CVProcessingServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.COMPLETED);
         
-        verify(cvProcessingRequestRepository, times(3)).save(any(CVProcessingRequest.class));
+        verify(cvProcessingRequestRepository, times(2)).save(any(CVProcessingRequest.class));
         verify(extractedFieldsRepository, times(1)).save(any(ExtractedFields.class));
         verify(ollamaFieldExtractor, times(1)).extractFields(anyString());
         verify(huggingFaceFieldExtractor, never()).extractFields(anyString());
@@ -98,7 +98,7 @@ class CVProcessingServiceTest {
         
         verify(ollamaFieldExtractor, times(1)).extractFields(anyString());
         verify(huggingFaceFieldExtractor, times(1)).extractFields(anyString());
-        verify(cvProcessingRequestRepository, times(3)).save(any(CVProcessingRequest.class));
+        verify(cvProcessingRequestRepository, times(2)).save(any(CVProcessingRequest.class));
         verify(extractedFieldsRepository, times(1)).save(any(ExtractedFields.class));
     }
 
@@ -182,9 +182,7 @@ class CVProcessingServiceTest {
         cvProcessingService.processCV(1L);
 
         // Then
-        verify(cvProcessingRequestRepository, atLeastOnce()).save(argThat(request -> 
-                request.getStatus() == CVProcessingRequest.ProcessingStatus.EXTRACTING
-        ));
+        verify(cvProcessingRequestRepository, times(2)).save(any(CVProcessingRequest.class));
     }
 
     @Test

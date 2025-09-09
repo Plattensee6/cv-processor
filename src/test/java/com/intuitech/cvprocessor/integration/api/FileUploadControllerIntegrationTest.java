@@ -1,6 +1,5 @@
 package com.intuitech.cvprocessor.integration.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.util.MockDataFactory;
@@ -38,9 +37,6 @@ class FileUploadControllerIntegrationTest {
     @Autowired
     private CVProcessingRequestRepository cvProcessingRequestRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -53,7 +49,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should successfully upload valid PDF file")
     void shouldSuccessfullyUploadValidPdfFile() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createValidPdfFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createValidPdfFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -77,7 +73,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should successfully upload valid DOC file")
     void shouldSuccessfullyUploadValidDocFile() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createValidDocFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createValidDocFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -97,7 +93,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should successfully upload valid DOCX file")
     void shouldSuccessfullyUploadValidDocxFile() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createValidDocxFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createValidDocxFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -117,7 +113,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should return error for invalid file type")
     void shouldReturnErrorForInvalidFileType() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createInvalidFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createInvalidFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -135,7 +131,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should return error for empty file")
     void shouldReturnErrorForEmptyFile() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createEmptyFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createEmptyFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -152,7 +148,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should return error for large file")
     void shouldReturnErrorForLargeFile() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createLargeFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createLargeFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -186,19 +182,19 @@ class FileUploadControllerIntegrationTest {
         CVProcessingRequest savedRequest = cvProcessingRequestRepository.save(request);
 
         // When & Then
-        mockMvc.perform(get("/api/cv/upload/{requestId}", savedRequest.getId())
+        mockMvc.perform(get("/api/cv/status/{requestId}", savedRequest.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.requestId").value(savedRequest.getId()))
                 .andExpect(jsonPath("$.fileName").value("test-cv.pdf"))
-                .andExpect(jsonPath("$.status").value("PENDING"));
+                .andExpect(jsonPath("$.status").value("UPLOADED"));
     }
 
     @Test
     @DisplayName("Should return error when processing request not found")
     void shouldReturnErrorWhenProcessingRequestNotFound() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/cv/upload/{requestId}", 999L)
+        mockMvc.perform(get("/api/cv/status/{requestId}", 999L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").exists())
@@ -209,8 +205,8 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should handle multiple file uploads")
     void shouldHandleMultipleFileUploads() throws Exception {
         // Given
-        MockMultipartFile file1 = MockDataFactory.createValidPdfFile();
-        MockMultipartFile file2 = MockDataFactory.createValidDocFile();
+        MockMultipartFile file1 = (MockMultipartFile) MockDataFactory.createValidPdfFile();
+        MockMultipartFile file2 = (MockMultipartFile) MockDataFactory.createValidDocFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -234,7 +230,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should return proper error response format")
     void shouldReturnProperErrorResponseFormat() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createInvalidFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createInvalidFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")
@@ -251,7 +247,7 @@ class FileUploadControllerIntegrationTest {
     @DisplayName("Should return proper success response format")
     void shouldReturnProperSuccessResponseFormat() throws Exception {
         // Given
-        MockMultipartFile file = MockDataFactory.createValidPdfFile();
+        MockMultipartFile file = (MockMultipartFile) MockDataFactory.createValidPdfFile();
 
         // When & Then
         mockMvc.perform(multipart("/api/cv/upload")

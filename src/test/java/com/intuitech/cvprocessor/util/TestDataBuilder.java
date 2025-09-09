@@ -22,7 +22,7 @@ public class TestDataBuilder {
         private String originalContent = "Test CV content";
         private String parsedText = "John Doe\nSoftware Engineer\n5 years experience";
 
-        private CVProcessingRequest.ProcessingStatus status = CVProcessingRequest.ProcessingStatus.PENDING;
+        private CVProcessingRequest.ProcessingStatus status = CVProcessingRequest.ProcessingStatus.UPLOADED;
         private String errorMessage;
         private LocalDateTime createdAt = LocalDateTime.now();
         private LocalDateTime updatedAt = LocalDateTime.now();
@@ -96,15 +96,11 @@ public class TestDataBuilder {
     public static class ExtractedFieldsBuilder {
         private Long id;
         private CVProcessingRequest processingRequest;
-        private String fullName = "John Doe";
-        private String email = "john.doe@example.com";
-        private String phone = "+1234567890";
-        private String address = "123 Main St, City, Country";
-        private String summary = "Experienced software engineer";
-        private List<String> skills = List.of("Java", "Spring Boot", "PostgreSQL");
-        private List<String> languages = List.of("English", "Spanish");
-        private List<WorkExperience> workExperience = List.of();
-        private List<Education> education = List.of();
+        private Integer workExperienceYears = 2;
+        private String workExperienceDetails = "Software Engineer at Test Company (2020-2023)";
+        private String skills = "Java, Spring Boot, PostgreSQL";
+        private String languages = "English, Spanish";
+        private String profile = "Experienced software engineer with 2 years of experience";
         private LocalDateTime createdAt = LocalDateTime.now();
         private LocalDateTime updatedAt = LocalDateTime.now();
 
@@ -118,48 +114,28 @@ public class TestDataBuilder {
             return this;
         }
 
-        public ExtractedFieldsBuilder fullName(String fullName) {
-            this.fullName = fullName;
+        public ExtractedFieldsBuilder workExperienceYears(Integer workExperienceYears) {
+            this.workExperienceYears = workExperienceYears;
             return this;
         }
 
-        public ExtractedFieldsBuilder email(String email) {
-            this.email = email;
+        public ExtractedFieldsBuilder workExperienceDetails(String workExperienceDetails) {
+            this.workExperienceDetails = workExperienceDetails;
             return this;
         }
 
-        public ExtractedFieldsBuilder phone(String phone) {
-            this.phone = phone;
-            return this;
-        }
-
-        public ExtractedFieldsBuilder address(String address) {
-            this.address = address;
-            return this;
-        }
-
-        public ExtractedFieldsBuilder summary(String summary) {
-            this.summary = summary;
-            return this;
-        }
-
-        public ExtractedFieldsBuilder skills(List<String> skills) {
+        public ExtractedFieldsBuilder skills(String skills) {
             this.skills = skills;
             return this;
         }
 
-        public ExtractedFieldsBuilder languages(List<String> languages) {
+        public ExtractedFieldsBuilder languages(String languages) {
             this.languages = languages;
             return this;
         }
 
-        public ExtractedFieldsBuilder workExperience(List<WorkExperience> workExperience) {
-            this.workExperience = workExperience;
-            return this;
-        }
-
-        public ExtractedFieldsBuilder education(List<Education> education) {
-            this.education = education;
+        public ExtractedFieldsBuilder profile(String profile) {
+            this.profile = profile;
             return this;
         }
 
@@ -176,16 +152,12 @@ public class TestDataBuilder {
         public ExtractedFields build() {
             ExtractedFields fields = new ExtractedFields();
             fields.setId(id);
-            fields.setProcessingRequest(processingRequest);
-            fields.setFullName(fullName);
-            fields.setEmail(email);
-            fields.setPhone(phone);
-            fields.setAddress(address);
-            fields.setSummary(summary);
+            fields.setCvProcessingRequest(processingRequest);
+            fields.setWorkExperienceYears(workExperienceYears);
+            fields.setWorkExperienceDetails(workExperienceDetails);
             fields.setSkills(skills);
             fields.setLanguages(languages);
-            fields.setWorkExperience(workExperience);
-            fields.setEducation(education);
+            fields.setProfile(profile);
             fields.setCreatedAt(createdAt);
             fields.setUpdatedAt(updatedAt);
             return fields;
@@ -195,8 +167,15 @@ public class TestDataBuilder {
     public static class ValidationResultBuilder {
         private Long id;
         private ExtractedFields extractedFields;
-        private boolean isValid = true;
-        private String validationMessage = "Validation successful";
+        private Boolean workExperienceValid = true;
+        private String workExperienceMessage = "Work experience validation successful";
+        private Boolean skillsValid = true;
+        private String skillsMessage = "Skills validation successful";
+        private Boolean languagesValid = true;
+        private String languagesMessage = "Languages validation successful";
+        private Boolean profileValid = true;
+        private String profileMessage = "Profile validation successful";
+        private Boolean overallValid = true;
         private List<String> errors = List.of();
         private List<String> warnings = List.of();
         private LocalDateTime createdAt = LocalDateTime.now();
@@ -212,13 +191,48 @@ public class TestDataBuilder {
             return this;
         }
 
-        public ValidationResultBuilder isValid(boolean isValid) {
-            this.isValid = isValid;
+        public ValidationResultBuilder workExperienceValid(Boolean workExperienceValid) {
+            this.workExperienceValid = workExperienceValid;
             return this;
         }
 
-        public ValidationResultBuilder validationMessage(String validationMessage) {
-            this.validationMessage = validationMessage;
+        public ValidationResultBuilder workExperienceMessage(String workExperienceMessage) {
+            this.workExperienceMessage = workExperienceMessage;
+            return this;
+        }
+
+        public ValidationResultBuilder skillsValid(Boolean skillsValid) {
+            this.skillsValid = skillsValid;
+            return this;
+        }
+
+        public ValidationResultBuilder skillsMessage(String skillsMessage) {
+            this.skillsMessage = skillsMessage;
+            return this;
+        }
+
+        public ValidationResultBuilder languagesValid(Boolean languagesValid) {
+            this.languagesValid = languagesValid;
+            return this;
+        }
+
+        public ValidationResultBuilder languagesMessage(String languagesMessage) {
+            this.languagesMessage = languagesMessage;
+            return this;
+        }
+
+        public ValidationResultBuilder profileValid(Boolean profileValid) {
+            this.profileValid = profileValid;
+            return this;
+        }
+
+        public ValidationResultBuilder profileMessage(String profileMessage) {
+            this.profileMessage = profileMessage;
+            return this;
+        }
+
+        public ValidationResultBuilder overallValid(Boolean overallValid) {
+            this.overallValid = overallValid;
             return this;
         }
 
@@ -246,8 +260,15 @@ public class TestDataBuilder {
             ValidationResult result = new ValidationResult();
             result.setId(id);
             result.setExtractedFields(extractedFields);
-            result.setValid(isValid);
-            result.setValidationMessage(validationMessage);
+            result.setWorkExperienceValid(workExperienceValid);
+            result.setWorkExperienceMessage(workExperienceMessage);
+            result.setSkillsValid(skillsValid);
+            result.setSkillsMessage(skillsMessage);
+            result.setLanguagesValid(languagesValid);
+            result.setLanguagesMessage(languagesMessage);
+            result.setProfileValid(profileValid);
+            result.setProfileMessage(profileMessage);
+            result.setOverallValid(overallValid);
             result.setErrors(errors);
             result.setWarnings(warnings);
             result.setCreatedAt(createdAt);
@@ -256,112 +277,6 @@ public class TestDataBuilder {
         }
     }
 
-    public static class WorkExperienceBuilder {
-        private String company = "Test Company";
-        private String position = "Software Engineer";
-        private String startDate = "2020-01-01";
-        private String endDate = "2023-12-31";
-        private String description = "Developed software applications";
-        private List<String> technologies = List.of("Java", "Spring Boot");
-
-        public WorkExperienceBuilder company(String company) {
-            this.company = company;
-            return this;
-        }
-
-        public WorkExperienceBuilder position(String position) {
-            this.position = position;
-            return this;
-        }
-
-        public WorkExperienceBuilder startDate(String startDate) {
-            this.startDate = startDate;
-            return this;
-        }
-
-        public WorkExperienceBuilder endDate(String endDate) {
-            this.endDate = endDate;
-            return this;
-        }
-
-        public WorkExperienceBuilder description(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public WorkExperienceBuilder technologies(List<String> technologies) {
-            this.technologies = technologies;
-            return this;
-        }
-
-        public WorkExperience build() {
-            WorkExperience experience = new WorkExperience();
-            experience.setCompany(company);
-            experience.setPosition(position);
-            experience.setStartDate(startDate);
-            experience.setEndDate(endDate);
-            experience.setDescription(description);
-            experience.setTechnologies(technologies);
-            return experience;
-        }
-    }
-
-    public static class EducationBuilder {
-        private String institution = "Test University";
-        private String degree = "Bachelor of Science";
-        private String field = "Computer Science";
-        private String startDate = "2016-09-01";
-        private String endDate = "2020-06-30";
-        private String gpa = "3.8";
-        private List<String> achievements = List.of("Dean's List", "Honors");
-
-        public EducationBuilder institution(String institution) {
-            this.institution = institution;
-            return this;
-        }
-
-        public EducationBuilder degree(String degree) {
-            this.degree = degree;
-            return this;
-        }
-
-        public EducationBuilder field(String field) {
-            this.field = field;
-            return this;
-        }
-
-        public EducationBuilder startDate(String startDate) {
-            this.startDate = startDate;
-            return this;
-        }
-
-        public EducationBuilder endDate(String endDate) {
-            this.endDate = endDate;
-            return this;
-        }
-
-        public EducationBuilder gpa(String gpa) {
-            this.gpa = gpa;
-            return this;
-        }
-
-        public EducationBuilder achievements(List<String> achievements) {
-            this.achievements = achievements;
-            return this;
-        }
-
-        public Education build() {
-            Education education = new Education();
-            education.setInstitution(institution);
-            education.setDegree(degree);
-            education.setField(field);
-            education.setStartDate(startDate);
-            education.setEndDate(endDate);
-            education.setGpa(gpa);
-            education.setAchievements(achievements);
-            return education;
-        }
-    }
 
     // Static factory methods
     public static CVProcessingRequestBuilder cvProcessingRequest() {
@@ -376,13 +291,6 @@ public class TestDataBuilder {
         return new ValidationResultBuilder();
     }
 
-    public static WorkExperienceBuilder workExperience() {
-        return new WorkExperienceBuilder();
-    }
-
-    public static EducationBuilder education() {
-        return new EducationBuilder();
-    }
 
     // MultipartFile builder
     public static MultipartFile multipartFile(String filename, String contentType, byte[] content) {

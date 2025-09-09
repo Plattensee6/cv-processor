@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @DataJpaTest
 @ActiveProfiles("test")
-class CVProcessingIntegrationTest {
+class fCVProcessingIntegrationTest {
 
     @Autowired
     private TestEntityManager entityManager;

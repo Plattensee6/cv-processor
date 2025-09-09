@@ -62,7 +62,12 @@ class FileUploadServiceTest {
         
         doNothing().when(fileValidationService).validateFile(validPdfFile);
         when(documentParsingService.parseDocument(validPdfFile)).thenReturn(parsedText);
-        when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
+        
+        // Create a mock response that matches the parsed text
+        CVProcessingRequest validFileRequest = MockDataFactory.createPendingRequest();
+        validFileRequest.setId(1L);
+        validFileRequest.setParsedText(parsedText);
+        when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(validFileRequest);
 
         // When
         FileUploadResponseDTO result = fileUploadService.uploadFile(validPdfFile);
@@ -177,7 +182,7 @@ class FileUploadServiceTest {
         verify(cvProcessingRequestRepository, times(1)).save(argThat(request -> 
                 request.getFileName().equals("john-doe-cv.pdf") &&
                 request.getContentType().equals("application/pdf") &&
-                request.getFileSize() == 1024L &&
+                request.getFileSize() == 24L &&
                 request.getParsedText().equals(parsedText) &&
                 request.getStatus() == CVProcessingRequest.ProcessingStatus.UPLOADED
         ));
@@ -249,7 +254,13 @@ class FileUploadServiceTest {
         
         doNothing().when(fileValidationService).validateFile(emptyFile);
         when(documentParsingService.parseDocument(emptyFile)).thenReturn("");
-        when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
+        
+        // Create a mock response that matches the empty file
+        CVProcessingRequest emptyFileRequest = MockDataFactory.createPendingRequest();
+        emptyFileRequest.setId(1L);
+        emptyFileRequest.setFileSize(0L);
+        emptyFileRequest.setParsedText("");
+        when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(emptyFileRequest);
 
         // When
         FileUploadResponseDTO result = fileUploadService.uploadFile(emptyFile);

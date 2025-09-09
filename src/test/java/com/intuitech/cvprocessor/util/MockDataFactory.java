@@ -4,7 +4,6 @@ import com.intuitech.cvprocessor.domain.model.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -20,7 +19,7 @@ public class MockDataFactory {
                 .fileName("john-doe-cv.pdf")
                 .contentType("application/pdf")
                 .fileSize(2048L)
-                .status(ProcessingStatus.PENDING)
+                .status(CVProcessingRequest.ProcessingStatus.UPLOADED)
                 .build();
     }
 
@@ -29,7 +28,7 @@ public class MockDataFactory {
                 .fileName("jane-smith-cv.pdf")
                 .contentType("application/pdf")
                 .fileSize(1536L)
-                .status(ProcessingStatus.COMPLETED)
+                .status(CVProcessingRequest.ProcessingStatus.COMPLETED)
                 .parsedText("Jane Smith\nSenior Developer\n8 years experience in Java")
                 .build();
     }
@@ -39,7 +38,7 @@ public class MockDataFactory {
                 .fileName("invalid-file.txt")
                 .contentType("text/plain")
                 .fileSize(512L)
-                .status(ProcessingStatus.FAILED)
+                .status(CVProcessingRequest.ProcessingStatus.FAILED)
                 .errorMessage("Unsupported file type")
                 .build();
     }
@@ -47,69 +46,46 @@ public class MockDataFactory {
     // Extracted Fields mocks
     public static ExtractedFields createValidExtractedFields() {
         return TestDataBuilder.extractedFields()
-                .fullName("John Doe")
-                .email("john.doe@example.com")
-                .phone("+1234567890")
-                .address("123 Main St, New York, NY 10001")
-                .summary("Experienced software engineer with 5+ years in Java development")
-                .skills(List.of("Java", "Spring Boot", "PostgreSQL", "Docker", "Kubernetes"))
-                .languages(List.of("English", "Spanish"))
-                .workExperience(List.of(
-                        TestDataBuilder.workExperience()
-                                .company("Tech Corp")
-                                .position("Senior Software Engineer")
-                                .startDate("2020-01-01")
-                                .endDate("2023-12-31")
-                                .description("Led development of microservices architecture")
-                                .technologies(List.of("Java", "Spring Boot", "Docker"))
-                                .build()
-                ))
-                .education(List.of(
-                        TestDataBuilder.education()
-                                .institution("University of Technology")
-                                .degree("Bachelor of Science")
-                                .field("Computer Science")
-                                .startDate("2016-09-01")
-                                .endDate("2020-06-30")
-                                .gpa("3.8")
-                                .build()
-                ))
+                .workExperienceYears(5)
+                .workExperienceDetails("Senior Software Engineer at Tech Corp (2020-2023) - Led development of microservices architecture using Java, Spring Boot, and Docker")
+                .skills("Java, Spring Boot, PostgreSQL, Docker, Kubernetes")
+                .languages("English, Spanish")
+                .profile("Experienced software engineer with 5+ years in Java development. Bachelor of Science in Computer Science from University of Technology (2016-2020) with GPA 3.8")
                 .build();
     }
 
     public static ExtractedFields createIncompleteExtractedFields() {
         return TestDataBuilder.extractedFields()
-                .fullName("Jane Smith")
-                .email("jane.smith@example.com")
-                .phone("") // Missing phone
-                .address("") // Missing address
-                .summary("Developer with some experience")
-                .skills(List.of("Python", "Django"))
-                .languages(List.of("English"))
-                .workExperience(List.of())
-                .education(List.of())
+                .workExperienceYears(2)
+                .workExperienceDetails("Developer at Test Company (2021-2023)")
+                .skills("Python, Django")
+                .languages("English")
+                .profile("Developer with some experience")
                 .build();
     }
 
     public static ExtractedFields createInvalidExtractedFields() {
         return TestDataBuilder.extractedFields()
-                .fullName("") // Invalid: empty name
-                .email("invalid-email") // Invalid: malformed email
-                .phone("123") // Invalid: too short
-                .address("")
-                .summary("")
-                .skills(List.of())
-                .languages(List.of())
-                .workExperience(List.of())
-                .education(List.of())
+                .workExperienceYears(0)
+                .workExperienceDetails("") // Invalid: empty work experience
+                .skills("") // Invalid: empty skills
+                .languages("") // Invalid: empty languages
+                .profile("") // Invalid: empty profile
                 .build();
     }
 
     // Validation Result mocks
     public static ValidationResult createValidValidationResult() {
         return TestDataBuilder.validationResult()
-                .isValid(true)
-                .validationMessage("All fields are valid")
+                .overallValid(true)
+                .workExperienceValid(true)
+                .workExperienceMessage("Work experience validation successful")
+                .skillsValid(true)
+                .skillsMessage("Skills validation successful")
+                .languagesValid(true)
+                .languagesMessage("Languages validation successful")
+                .profileValid(true)
+                .profileMessage("Profile validation successful")
                 .errors(List.of())
                 .warnings(List.of("Phone number format could be improved"))
                 .build();
@@ -117,64 +93,24 @@ public class MockDataFactory {
 
     public static ValidationResult createInvalidValidationResult() {
         return TestDataBuilder.validationResult()
-                .isValid(false)
-                .validationMessage("Validation failed")
+                .overallValid(false)
+                .workExperienceValid(false)
+                .workExperienceMessage("Work experience validation failed")
+                .skillsValid(false)
+                .skillsMessage("Skills validation failed")
+                .languagesValid(true)
+                .languagesMessage("Languages validation successful")
+                .profileValid(false)
+                .profileMessage("Profile validation failed")
                 .errors(List.of(
-                        "Full name is required",
-                        "Email format is invalid",
-                        "At least one skill is required"
+                        "Work experience is required",
+                        "Skills are required",
+                        "Profile is required"
                 ))
                 .warnings(List.of())
                 .build();
     }
 
-    // Work Experience mocks
-    public static WorkExperience createValidWorkExperience() {
-        return TestDataBuilder.workExperience()
-                .company("Google")
-                .position("Software Engineer")
-                .startDate("2021-01-01")
-                .endDate("2023-12-31")
-                .description("Developed scalable web applications using Java and Spring Boot")
-                .technologies(List.of("Java", "Spring Boot", "Kubernetes", "GCP"))
-                .build();
-    }
-
-    public static WorkExperience createCurrentWorkExperience() {
-        return TestDataBuilder.workExperience()
-                .company("Microsoft")
-                .position("Senior Software Engineer")
-                .startDate("2023-01-01")
-                .endDate("") // Current position
-                .description("Leading development of cloud-native applications")
-                .technologies(List.of("C#", ".NET", "Azure", "Docker"))
-                .build();
-    }
-
-    // Education mocks
-    public static Education createValidEducation() {
-        return TestDataBuilder.education()
-                .institution("Stanford University")
-                .degree("Master of Science")
-                .field("Computer Science")
-                .startDate("2018-09-01")
-                .endDate("2020-06-30")
-                .gpa("3.9")
-                .achievements(List.of("Summa Cum Laude", "Dean's List"))
-                .build();
-    }
-
-    public static Education createBachelorEducation() {
-        return TestDataBuilder.education()
-                .institution("MIT")
-                .degree("Bachelor of Science")
-                .field("Computer Science")
-                .startDate("2014-09-01")
-                .endDate("2018-06-30")
-                .gpa("3.7")
-                .achievements(List.of("Magna Cum Laude"))
-                .build();
-    }
 
     // MultipartFile mocks
     public static MultipartFile createValidPdfFile() {
@@ -264,7 +200,7 @@ public class MockDataFactory {
         ExtractedFields fields = createValidExtractedFields();
         ValidationResult result = createValidValidationResult();
         
-        fields.setProcessingRequest(request);
+        fields.setCvProcessingRequest(request);
         result.setExtractedFields(fields);
         
         return new CompleteProcessingPipeline(request, fields, result);
@@ -275,7 +211,7 @@ public class MockDataFactory {
         ExtractedFields fields = createInvalidExtractedFields();
         ValidationResult result = createInvalidValidationResult();
         
-        fields.setProcessingRequest(request);
+        fields.setCvProcessingRequest(request);
         result.setExtractedFields(fields);
         
         return new CompleteProcessingPipeline(request, fields, result);

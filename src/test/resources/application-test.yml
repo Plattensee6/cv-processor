@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: test
   application:
     name: cv-processor-test
   datasource:
@@ -39,7 +37,7 @@ huggingface:
 file:
   upload:
     max-size: 5MB
-    allowed-types: application/pdf,application/msword
+    allowed-types: application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
 
 # Test logging configuration
 logging:
