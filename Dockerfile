@@ -19,8 +19,8 @@ RUN mvn clean package -DskipTests
 # Runtime stage
 FROM openjdk:21-jdk-slim
 
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install curl and jq for health checks and JSON processing
+RUN apt-get update && apt-get install -y curl jq && rm -rf /var/lib/apt/lists/*
 
 # Create app user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -41,9 +41,10 @@ USER appuser
 EXPOSE 8080
 EXPOSE 5005
 
-# Health check
+# Health check with Ollama dependency check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8080/api/health || exit 1
+  CMD curl -f http://localhost:8080/api/health && \
+      curl -f http://localhost:8080/api/health/ollama/ready || exit 1
 
 # Set JVM options for containerized environment
 ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
