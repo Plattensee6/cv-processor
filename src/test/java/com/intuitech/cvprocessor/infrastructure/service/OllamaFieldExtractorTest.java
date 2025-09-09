@@ -33,7 +33,6 @@ class OllamaFieldExtractorTest {
     @Mock
     private PromptBuilder promptBuilder;
 
-    @SuppressWarnings("unused")
     private ObjectMapper objectMapper; // Injected into OllamaFieldExtractor via @InjectMocks
 
     @Mock

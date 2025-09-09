@@ -1,7 +1,6 @@
 package com.intuitech.cvprocessor.infrastructure.service;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Timer;
+import com.intuitech.cvprocessor.infrastructure.monitoring.CustomMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,36 +15,27 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class MetricsService {
 
-    private final Counter cvProcessingRequestsCounter;
-    private final Counter cvProcessingSuccessCounter;
-    private final Counter cvProcessingFailureCounter;
-    private final Timer cvProcessingTimer;
-    private final Counter fileUploadCounter;
-    private final Counter validationSuccessCounter;
-    private final Counter validationFailureCounter;
+    private final CustomMetrics customMetrics;
 
     /**
      * Record CV processing request
      */
     public void recordCVProcessingRequest() {
-        cvProcessingRequestsCounter.increment();
-        log.debug("Recorded CV processing request");
+        customMetrics.recordCvProcessingStart();
     }
 
     /**
      * Record successful CV processing
      */
     public void recordCVProcessingSuccess() {
-        cvProcessingSuccessCounter.increment();
-        log.debug("Recorded CV processing success");
+        customMetrics.recordCvProcessingSuccess();
     }
 
     /**
      * Record failed CV processing
      */
     public void recordCVProcessingFailure() {
-        cvProcessingFailureCounter.increment();
-        log.debug("Recorded CV processing failure");
+        customMetrics.recordCvProcessingFailure();
     }
 
     /**
@@ -54,7 +44,7 @@ public class MetricsService {
      * @param durationMs processing duration in milliseconds
      */
     public void recordCVProcessingDuration(long durationMs) {
-        cvProcessingTimer.record(durationMs, java.util.concurrent.TimeUnit.MILLISECONDS);
+        // Duration is recorded via timer samples in the service layer
         log.debug("Recorded CV processing duration: {} ms", durationMs);
     }
 
@@ -62,24 +52,21 @@ public class MetricsService {
      * Record file upload
      */
     public void recordFileUpload() {
-        fileUploadCounter.increment();
-        log.debug("Recorded file upload");
+        customMetrics.recordCvUpload();
     }
 
     /**
      * Record successful validation
      */
     public void recordValidationSuccess() {
-        validationSuccessCounter.increment();
-        log.debug("Recorded validation success");
+        customMetrics.recordValidationSuccess();
     }
 
     /**
      * Record failed validation
      */
     public void recordValidationFailure() {
-        validationFailureCounter.increment();
-        log.debug("Recorded validation failure");
+        customMetrics.recordValidationFailure();
     }
 
     /**
@@ -88,11 +75,14 @@ public class MetricsService {
      * @return success rate as percentage
      */
     public double getProcessingSuccessRate() {
-        double total = cvProcessingRequestsCounter.count();
+        java.util.Map<String, Object> metrics = customMetrics.getMetricsSummary();
+        double total = (Double) metrics.get("cvProcessingTotal");
+        double success = (Double) metrics.get("cvProcessingSuccess");
+        
         if (total == 0) {
             return 0.0;
         }
-        return (cvProcessingSuccessCounter.count() / total) * 100.0;
+        return (success / total) * 100.0;
     }
 
     /**
@@ -101,10 +91,14 @@ public class MetricsService {
      * @return success rate as percentage
      */
     public double getValidationSuccessRate() {
-        double total = validationSuccessCounter.count() + validationFailureCounter.count();
+        java.util.Map<String, Object> metrics = customMetrics.getMetricsSummary();
+        double success = (Double) metrics.get("validationSuccess");
+        double failures = (Double) metrics.get("validationFailures");
+        double total = success + failures;
+        
         if (total == 0) {
             return 0.0;
         }
-        return (validationSuccessCounter.count() / total) * 100.0;
+        return (success / total) * 100.0;
     }
 }

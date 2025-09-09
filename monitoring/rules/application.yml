@@ -1,0 +1,62 @@
+groups:
+  - name: cv-processor-application
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(cv_processing_failures_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CV processing error rate"
+          description: "CV processing error rate is {{ $value }} errors per second"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(cv_processing_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CV processing response time"
+          description: "95th percentile response time is {{ $value }} seconds"
+
+      # Service down
+      - alert: ServiceDown
+        expr: up{job="cv-processor"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CV Processor service is down"
+          description: "CV Processor service has been down for more than 1 minute"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: jvm_memory_used_bytes / jvm_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      # Database connection issues
+      - alert: DatabaseConnectionIssues
+        expr: rate(hikaricp_connections_active[5m]) / rate(hikaricp_connections_max[5m]) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connection pool usage is {{ $value | humanizePercentage }}"
+
+      # LLM service issues
+      - alert: LLMServiceIssues
+        expr: rate(llm_requests_failures_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "LLM service experiencing issues"
+          description: "LLM failure rate is {{ $value }} failures per second"
