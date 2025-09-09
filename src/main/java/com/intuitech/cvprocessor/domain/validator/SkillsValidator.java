@@ -4,9 +4,6 @@ import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Validator for skills field
  * 
@@ -15,8 +12,6 @@ import java.util.List;
 @Component
 @Slf4j
 public class SkillsValidator {
-
-    private static final List<String> REQUIRED_SKILLS = Arrays.asList("java", "llm");
 
     /**
      * Validate skills

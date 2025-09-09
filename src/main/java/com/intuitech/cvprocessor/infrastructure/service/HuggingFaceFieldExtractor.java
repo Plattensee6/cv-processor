@@ -75,14 +75,15 @@ public class HuggingFaceFieldExtractor {
                     String.class
             );
 
-            if (response.getBody() == null || response.getBody().trim().isEmpty()) {
+            String responseBody = response.getBody();
+            if (responseBody == null || responseBody.trim().isEmpty()) {
                 throw new FieldExtractionException("Empty response from Hugging Face API");
             }
 
-            log.debug("Received Hugging Face response: {}", response.getBody());
+            log.debug("Received Hugging Face response: {}", responseBody);
 
             // Parse response
-            ExtractedFields extractedFields = parseExtractionResponse(response.getBody());
+            ExtractedFields extractedFields = parseExtractionResponse(responseBody);
 
             log.info("Successfully extracted fields from CV");
             return extractedFields;

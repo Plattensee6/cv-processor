@@ -17,7 +17,6 @@ import java.util.UUID;
 @Slf4j
 public class PerformanceLogger {
 
-    private static final String PERFORMANCE_LOGGER = "com.intuitech.cvprocessor.performance";
     private static final String REQUEST_ID_KEY = "requestId";
     private static final String OPERATION_KEY = "operation";
     private static final String DURATION_KEY = "duration";

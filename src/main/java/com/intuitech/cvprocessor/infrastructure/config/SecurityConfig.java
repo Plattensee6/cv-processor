@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/cv/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .headers(headers -> headers.frameOptions().disable());
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
         log.info("Security filter chain configured successfully");
         return http.build();

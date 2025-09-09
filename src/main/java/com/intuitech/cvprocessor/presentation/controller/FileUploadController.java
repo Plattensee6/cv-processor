@@ -46,7 +46,8 @@ public class FileUploadController {
                     .body(Map.of(
                             "error", "File upload failed",
                             "message", e.getMessage(),
-                            "timestamp", java.time.LocalDateTime.now()
+                            "timestamp", java.time.LocalDateTime.now(),
+                            "path", "/api/cv/upload"
                     ));
         } catch (Exception e) {
             log.error("Unexpected error during file upload: {}", e.getMessage(), e);
@@ -75,7 +76,13 @@ public class FileUploadController {
 
         } catch (FileUploadService.FileUploadException e) {
             log.error("Failed to retrieve processing status: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "error", "Not Found",
+                            "message", e.getMessage(),
+                            "timestamp", java.time.LocalDateTime.now(),
+                            "path", "/api/cv/status/" + requestId
+                    ));
 
         } catch (Exception e) {
             log.error("Unexpected error retrieving processing status: {}", e.getMessage(), e);

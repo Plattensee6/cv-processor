@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -16,7 +15,6 @@ import java.util.Map;
 @Slf4j
 public class SecurityLogger {
 
-    private static final String SECURITY_LOGGER = "com.intuitech.cvprocessor.security";
     private static final String EVENT_TYPE_KEY = "eventType";
     private static final String USER_ID_KEY = "userId";
     private static final String IP_ADDRESS_KEY = "ipAddress";

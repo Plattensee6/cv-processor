@@ -1,8 +1,6 @@
 package com.intuitech.cvprocessor.application.dto;
 
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
-import com.intuitech.cvprocessor.domain.model.ExtractedFields;
-import com.intuitech.cvprocessor.domain.model.ValidationResult;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

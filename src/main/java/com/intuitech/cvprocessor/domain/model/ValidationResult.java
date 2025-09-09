@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Entity representing validation results for extracted CV fields
@@ -59,6 +60,16 @@ public class ValidationResult {
     @Column(name = "overall_valid")
     private Boolean overallValid;
 
+    @ElementCollection
+    @CollectionTable(name = "validation_result_errors", joinColumns = @JoinColumn(name = "validation_result_id"))
+    @Column(name = "error")
+    private List<String> errors;
+
+    @ElementCollection
+    @CollectionTable(name = "validation_result_warnings", joinColumns = @JoinColumn(name = "validation_result_id"))
+    @Column(name = "warning")
+    private List<String> warnings;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -66,4 +77,15 @@ public class ValidationResult {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    /**
+     * Backward-compatible accessor expected by tests
+     */
+    public Boolean getValid() {
+        return overallValid;
+    }
+
+    public void setValid(Boolean valid) {
+        this.overallValid = valid;
+    }
 }

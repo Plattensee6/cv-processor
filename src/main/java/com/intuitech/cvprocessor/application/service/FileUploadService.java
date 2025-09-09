@@ -1,6 +1,5 @@
 package com.intuitech.cvprocessor.application.service;
 
-import com.intuitech.cvprocessor.application.dto.FileUploadRequestDTO;
 import com.intuitech.cvprocessor.application.dto.FileUploadResponseDTO;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.infrastructure.config.OllamaConfig;
+import com.intuitech.cvprocessor.infrastructure.monitoring.OllamaMetrics;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class OllamaFieldExtractor {
     private final OllamaConfig ollamaConfig;
     private final PromptBuilder promptBuilder;
     private final ObjectMapper objectMapper;
+    private final OllamaMetrics ollamaMetrics;
 
     /**
      * Extract fields from CV document text using Ollama
@@ -39,6 +41,9 @@ public class OllamaFieldExtractor {
     @Retry(name = "ollama-extraction")
     @CircuitBreaker(name = "ollama-extraction")
     public ExtractedFields extractFields(String documentText) throws FieldExtractionException {
+        long startTime = System.currentTimeMillis();
+        ollamaMetrics.incrementConcurrentRequests();
+        
         try {
             // Build prompt
             String prompt = promptBuilder.buildFieldExtractionPrompt(documentText);
@@ -71,21 +76,36 @@ public class OllamaFieldExtractor {
                     String.class
             );
 
-            if (response.getBody() == null || response.getBody().trim().isEmpty()) {
+            String responseBody = response.getBody();
+            if (responseBody == null || responseBody.trim().isEmpty()) {
                 throw new FieldExtractionException("Empty response from Ollama API");
             }
 
-            log.debug("Received Ollama response: {}", response.getBody());
+            log.debug("Received Ollama response: {}", responseBody);
 
             // Parse response
-            ExtractedFields extractedFields = parseOllamaResponse(response.getBody());
+            ExtractedFields extractedFields = parseOllamaResponse(responseBody);
 
-            log.info("Successfully extracted fields from CV using Ollama");
+            // Record success metrics
+            long endTime = System.currentTimeMillis();
+            long responseTime = endTime - startTime;
+            ollamaMetrics.recordSuccess();
+            ollamaMetrics.recordResponseTime(responseTime);
+
+            log.info("Successfully extracted fields from CV using Ollama in {}ms", responseTime);
             return extractedFields;
 
         } catch (Exception e) {
+            // Record failure metrics
+            long endTime = System.currentTimeMillis();
+            long responseTime = endTime - startTime;
+            ollamaMetrics.recordFailure();
+            ollamaMetrics.recordResponseTime(responseTime);
+            
             log.error("Field extraction failed with Ollama: {}", e.getMessage(), e);
             throw new FieldExtractionException("Failed to extract fields from CV using Ollama", e);
+        } finally {
+            ollamaMetrics.decrementConcurrentRequests();
         }
     }
 
