@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.infrastructure.config.OllamaConfig;
 import com.intuitech.cvprocessor.infrastructure.monitoring.OllamaMetrics;
+import com.intuitech.cvprocessor.application.service.FieldExtractor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,10 +20,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for OllamaFieldExtractor
+ * Unit tests for OllamaIntegrationService
  */
 @ExtendWith(MockitoExtension.class)
-class OllamaFieldExtractorTest {
+class OllamaIntegrationServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
@@ -38,7 +39,7 @@ class OllamaFieldExtractorTest {
     @Mock
     private OllamaMetrics ollamaMetrics;
 
-    private OllamaFieldExtractor ollamaFieldExtractor;
+    private OllamaIntegrationService ollamaIntegrationService;
 
     private final String testDocumentText = "John Doe, Software Engineer with 2 years experience in Java and Python.";
     private final String testPrompt = "Extract fields from CV: " + testDocumentText;
@@ -51,8 +52,8 @@ class OllamaFieldExtractorTest {
         when(ollamaConfig.getModelUrl()).thenReturn("http://localhost:11434/api/generate");
         when(promptBuilder.buildFieldExtractionPrompt(testDocumentText)).thenReturn(testPrompt);
         
-        // Manually create OllamaFieldExtractor instance
-        ollamaFieldExtractor = new OllamaFieldExtractor(
+        // Manually create OllamaIntegrationService instance
+        ollamaIntegrationService = new OllamaIntegrationService(
             restTemplate, 
             ollamaConfig, 
             promptBuilder, 
@@ -68,7 +69,7 @@ class OllamaFieldExtractorTest {
         when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(response);
 
         // When
-        ExtractedFields result = ollamaFieldExtractor.extractFields(testDocumentText);
+        ExtractedFields result = ollamaIntegrationService.extractFields(testDocumentText);
 
         // Then
         assertNotNull(result);
@@ -91,8 +92,8 @@ class OllamaFieldExtractorTest {
         when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(response);
 
         // When & Then
-        assertThrows(OllamaFieldExtractor.FieldExtractionException.class, () -> {
-            ollamaFieldExtractor.extractFields(testDocumentText);
+        assertThrows(FieldExtractor.FieldExtractionException.class, () -> {
+            ollamaIntegrationService.extractFields(testDocumentText);
         });
 
         verify(ollamaMetrics).incrementConcurrentRequests();
@@ -107,8 +108,8 @@ class OllamaFieldExtractorTest {
         when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(response);
 
         // When & Then
-        assertThrows(OllamaFieldExtractor.FieldExtractionException.class, () -> {
-            ollamaFieldExtractor.extractFields(testDocumentText);
+        assertThrows(FieldExtractor.FieldExtractionException.class, () -> {
+            ollamaIntegrationService.extractFields(testDocumentText);
         });
 
         verify(ollamaMetrics).incrementConcurrentRequests();
@@ -123,8 +124,8 @@ class OllamaFieldExtractorTest {
                 .thenThrow(new RuntimeException("Connection refused"));
 
         // When & Then
-        assertThrows(OllamaFieldExtractor.FieldExtractionException.class, () -> {
-            ollamaFieldExtractor.extractFields(testDocumentText);
+        assertThrows(FieldExtractor.FieldExtractionException.class, () -> {
+            ollamaIntegrationService.extractFields(testDocumentText);
         });
 
         verify(ollamaMetrics).incrementConcurrentRequests();
@@ -140,8 +141,8 @@ class OllamaFieldExtractorTest {
         when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(response);
 
         // When & Then
-        assertThrows(OllamaFieldExtractor.FieldExtractionException.class, () -> {
-            ollamaFieldExtractor.extractFields(testDocumentText);
+        assertThrows(FieldExtractor.FieldExtractionException.class, () -> {
+            ollamaIntegrationService.extractFields(testDocumentText);
         });
 
         verify(ollamaMetrics).incrementConcurrentRequests();
@@ -157,8 +158,8 @@ class OllamaFieldExtractorTest {
         when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(response);
 
         // When & Then
-        assertThrows(OllamaFieldExtractor.FieldExtractionException.class, () -> {
-            ollamaFieldExtractor.extractFields(testDocumentText);
+        assertThrows(FieldExtractor.FieldExtractionException.class, () -> {
+            ollamaIntegrationService.extractFields(testDocumentText);
         });
 
         verify(ollamaMetrics).incrementConcurrentRequests();
@@ -173,7 +174,7 @@ class OllamaFieldExtractorTest {
         when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(response);
 
         // When
-        ollamaFieldExtractor.extractFields(testDocumentText);
+        ollamaIntegrationService.extractFields(testDocumentText);
 
         // Then
         verify(restTemplate).exchange(
@@ -199,7 +200,7 @@ class OllamaFieldExtractorTest {
         when(restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(response);
 
         // When
-        ollamaFieldExtractor.extractFields(testDocumentText);
+        ollamaIntegrationService.extractFields(testDocumentText);
 
         // Then
         verify(ollamaMetrics).incrementConcurrentRequests();
@@ -215,8 +216,8 @@ class OllamaFieldExtractorTest {
                 .thenThrow(new RuntimeException("Test exception"));
 
         // When & Then
-        assertThrows(OllamaFieldExtractor.FieldExtractionException.class, () -> {
-            ollamaFieldExtractor.extractFields(testDocumentText);
+        assertThrows(FieldExtractor.FieldExtractionException.class, () -> {
+            ollamaIntegrationService.extractFields(testDocumentText);
         });
 
         // Verify that decrementConcurrentRequests is called even when exception occurs

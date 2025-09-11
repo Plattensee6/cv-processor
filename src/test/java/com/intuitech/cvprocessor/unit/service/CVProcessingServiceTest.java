@@ -5,8 +5,7 @@ import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.infrastructure.repository.ExtractedFieldsRepository;
-import com.intuitech.cvprocessor.infrastructure.service.HuggingFaceFieldExtractor;
-import com.intuitech.cvprocessor.infrastructure.service.OllamaFieldExtractor;
+import com.intuitech.cvprocessor.application.service.FieldExtractor;
 import com.intuitech.cvprocessor.util.MockDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,10 +35,8 @@ class CVProcessingServiceTest {
     private ExtractedFieldsRepository extractedFieldsRepository;
 
     @Mock
-    private OllamaFieldExtractor ollamaFieldExtractor;
+    private FieldExtractor fieldExtractor;
 
-    @Mock
-    private HuggingFaceFieldExtractor huggingFaceFieldExtractor;
 
     @InjectMocks
     private CVProcessingService cvProcessingService;
@@ -61,7 +58,8 @@ class CVProcessingServiceTest {
     void shouldSuccessfullyProcessCVWithOllama() throws Exception {
         // Given
         when(cvProcessingRequestRepository.findById(1L)).thenReturn(Optional.of(testRequest));
-        when(ollamaFieldExtractor.extractFields(anyString())).thenReturn(testExtractedFields);
+        when(fieldExtractor.extractFields(anyString())).thenReturn(testExtractedFields);
+        when(fieldExtractor.getExtractorName()).thenReturn("TestExtractor");
         when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
         when(extractedFieldsRepository.save(any(ExtractedFields.class))).thenReturn(testExtractedFields);
 
@@ -74,32 +72,24 @@ class CVProcessingServiceTest {
         
         verify(cvProcessingRequestRepository, times(2)).save(any(CVProcessingRequest.class));
         verify(extractedFieldsRepository, times(1)).save(any(ExtractedFields.class));
-        verify(ollamaFieldExtractor, times(1)).extractFields(anyString());
-        verify(huggingFaceFieldExtractor, never()).extractFields(anyString());
+        verify(fieldExtractor, times(1)).extractFields(anyString());
     }
 
     @Test
-    @DisplayName("Should fallback to HuggingFace when Ollama fails")
-    void shouldFallbackToHuggingFaceWhenOllamaFails() throws Exception {
+    @DisplayName("Should handle Ollama extraction failure")
+    void shouldHandleOllamaExtractionFailure() throws Exception {
         // Given
         when(cvProcessingRequestRepository.findById(1L)).thenReturn(Optional.of(testRequest));
-        when(ollamaFieldExtractor.extractFields(anyString()))
-                .thenThrow(new RuntimeException("Ollama service unavailable"));
-        when(huggingFaceFieldExtractor.extractFields(anyString())).thenReturn(testExtractedFields);
-        when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
-        when(extractedFieldsRepository.save(any(ExtractedFields.class))).thenReturn(testExtractedFields);
+        when(fieldExtractor.extractFields(anyString()))
+                .thenThrow(new FieldExtractor.FieldExtractionException("Extractor service unavailable"));
 
-        // When
-        CVProcessingRequest result = cvProcessingService.processCV(1L);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.COMPLETED);
+        // When & Then
+        assertThatThrownBy(() -> cvProcessingService.processCV(1L))
+                .isInstanceOf(CVProcessingService.CVProcessingException.class)
+                .hasMessageContaining("Field extraction failed");
         
-        verify(ollamaFieldExtractor, times(1)).extractFields(anyString());
-        verify(huggingFaceFieldExtractor, times(1)).extractFields(anyString());
         verify(cvProcessingRequestRepository, times(2)).save(any(CVProcessingRequest.class));
-        verify(extractedFieldsRepository, times(1)).save(any(ExtractedFields.class));
+        verify(fieldExtractor, times(1)).extractFields(anyString());
     }
 
     @Test
@@ -118,14 +108,12 @@ class CVProcessingServiceTest {
     }
 
     @Test
-    @DisplayName("Should handle HuggingFace extraction failure")
-    void shouldHandleHuggingFaceExtractionFailure() throws Exception {
+    @DisplayName("Should handle extractor service failure with proper error handling")
+    void shouldHandleExtractorServiceFailureWithProperErrorHandling() throws Exception {
         // Given
         when(cvProcessingRequestRepository.findById(1L)).thenReturn(Optional.of(testRequest));
-        when(ollamaFieldExtractor.extractFields(anyString()))
-                .thenThrow(new RuntimeException("Ollama service unavailable"));
-        when(huggingFaceFieldExtractor.extractFields(anyString()))
-                .thenThrow(new HuggingFaceFieldExtractor.FieldExtractionException("HuggingFace API error"));
+        when(fieldExtractor.extractFields(anyString()))
+                .thenThrow(new FieldExtractor.FieldExtractionException("Extractor service unavailable"));
         when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
 
         // When & Then
@@ -148,9 +136,7 @@ class CVProcessingServiceTest {
     void shouldHandleUnexpectedErrors() throws Exception {
         // Given
         when(cvProcessingRequestRepository.findById(1L)).thenReturn(Optional.of(testRequest));
-        when(ollamaFieldExtractor.extractFields(anyString()))
-                .thenThrow(new RuntimeException("Unexpected error"));
-        when(huggingFaceFieldExtractor.extractFields(anyString()))
+        when(fieldExtractor.extractFields(anyString()))
                 .thenThrow(new RuntimeException("Unexpected error"));
         when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
 
@@ -174,7 +160,8 @@ class CVProcessingServiceTest {
     void shouldUpdateStatusToExtractingBeforeProcessing() throws Exception {
         // Given
         when(cvProcessingRequestRepository.findById(1L)).thenReturn(Optional.of(testRequest));
-        when(ollamaFieldExtractor.extractFields(anyString())).thenReturn(testExtractedFields);
+        when(fieldExtractor.extractFields(anyString())).thenReturn(testExtractedFields);
+        when(fieldExtractor.getExtractorName()).thenReturn("TestExtractor");
         when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
         when(extractedFieldsRepository.save(any(ExtractedFields.class))).thenReturn(testExtractedFields);
 
@@ -190,7 +177,8 @@ class CVProcessingServiceTest {
     void shouldLinkExtractedFieldsToProcessingRequest() throws Exception {
         // Given
         when(cvProcessingRequestRepository.findById(1L)).thenReturn(Optional.of(testRequest));
-        when(ollamaFieldExtractor.extractFields(anyString())).thenReturn(testExtractedFields);
+        when(fieldExtractor.extractFields(anyString())).thenReturn(testExtractedFields);
+        when(fieldExtractor.getExtractorName()).thenReturn("TestExtractor");
         when(cvProcessingRequestRepository.save(any(CVProcessingRequest.class))).thenReturn(testRequest);
         when(extractedFieldsRepository.save(any(ExtractedFields.class))).thenReturn(testExtractedFields);
 

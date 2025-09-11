@@ -26,7 +26,7 @@ class SkillsValidatorTest {
                 .build();
 
         // When
-        SkillsValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertTrue(result.isValid());
@@ -41,7 +41,7 @@ class SkillsValidatorTest {
                 .build();
 
         // When
-        SkillsValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertTrue(result.isValid());
@@ -56,7 +56,7 @@ class SkillsValidatorTest {
                 .build();
 
         // When
-        SkillsValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertTrue(result.isValid());
@@ -71,7 +71,7 @@ class SkillsValidatorTest {
                 .build();
 
         // When
-        SkillsValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertFalse(result.isValid());
@@ -86,7 +86,7 @@ class SkillsValidatorTest {
                 .build();
 
         // When
-        SkillsValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertFalse(result.isValid());
@@ -101,7 +101,7 @@ class SkillsValidatorTest {
                 .build();
 
         // When
-        SkillsValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertFalse(result.isValid());
@@ -116,7 +116,7 @@ class SkillsValidatorTest {
                 .build();
 
         // When
-        SkillsValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertFalse(result.isValid());

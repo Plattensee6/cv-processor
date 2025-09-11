@@ -26,7 +26,7 @@ class WorkExperienceValidatorTest {
                 .build();
 
         // When
-        WorkExperienceValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertTrue(result.isValid());
@@ -41,7 +41,7 @@ class WorkExperienceValidatorTest {
                 .build();
 
         // When
-        WorkExperienceValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertTrue(result.isValid());
@@ -55,7 +55,7 @@ class WorkExperienceValidatorTest {
                 .build();
 
         // When
-        WorkExperienceValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertTrue(result.isValid());
@@ -69,7 +69,7 @@ class WorkExperienceValidatorTest {
                 .build();
 
         // When
-        WorkExperienceValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertFalse(result.isValid());
@@ -84,7 +84,7 @@ class WorkExperienceValidatorTest {
                 .build();
 
         // When
-        WorkExperienceValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertFalse(result.isValid());
@@ -99,7 +99,7 @@ class WorkExperienceValidatorTest {
                 .build();
 
         // When
-        WorkExperienceValidator.ValidationResult result = validator.validate(fields);
+        ValidationResultDTO result = validator.validate(fields);
 
         // Then
         assertFalse(result.isValid());

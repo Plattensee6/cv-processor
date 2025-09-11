@@ -27,12 +27,6 @@ ollama:
   model: llama3.2:3b
   timeout: 30
 
-huggingface:
-  api-key: test-api-key
-  model: test-model
-  max-tokens: 1000
-  temperature: 0.1
-  timeout: 30
 
 file:
   upload:
@@ -70,18 +64,9 @@ resilience4j:
         wait-duration-in-open-state: 5s
         sliding-window-size: 5
         minimum-number-of-calls: 2
-      huggingface-extraction:
-        failure-rate-threshold: 90
-        wait-duration-in-open-state: 5s
-        sliding-window-size: 5
-        minimum-number-of-calls: 2
   retry:
     instances:
       ollama-extraction:
-        max-attempts: 2
-        wait-duration: 1s
-        exponential-backoff-multiplier: 1
-      huggingface-extraction:
         max-attempts: 2
         wait-duration: 1s
         exponential-backoff-multiplier: 1
@@ -97,6 +82,3 @@ test:
     ollama:
       enabled: true
       response-time: 100ms
-    huggingface:
-      enabled: true
-      response-time: 200ms

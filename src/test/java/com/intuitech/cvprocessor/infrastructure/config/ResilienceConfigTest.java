@@ -56,21 +56,6 @@ class ResilienceConfigTest {
         assertNotNull(retry.getMetrics());
     }
 
-    @Test
-    void huggingFaceCircuitBreaker_ShouldBeProperlyConfigured() {
-        // When
-        CircuitBreaker circuitBreaker = resilienceConfig.huggingFaceCircuitBreaker(meterRegistry);
-
-        // Then
-        assertNotNull(circuitBreaker);
-        assertEquals("huggingface-extraction", circuitBreaker.getName());
-        
-        // Verify circuit breaker is in closed state initially
-        assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.getState());
-        
-        // Verify that the circuit breaker has metrics
-        assertNotNull(circuitBreaker.getMetrics());
-    }
 
     @Test
     void ollamaCircuitBreaker_ShouldHaveEventListeners() {
@@ -96,17 +81,6 @@ class ResilienceConfigTest {
         assertNotNull(retry.getEventPublisher());
     }
 
-    @Test
-    void huggingFaceCircuitBreaker_ShouldHaveEventListeners() {
-        // When
-        CircuitBreaker circuitBreaker = resilienceConfig.huggingFaceCircuitBreaker(meterRegistry);
-
-        // Then
-        assertNotNull(circuitBreaker);
-        
-        // Verify that event publisher is available (indicates listeners are registered)
-        assertNotNull(circuitBreaker.getEventPublisher());
-    }
 
     @Test
     void ollamaCircuitBreaker_ShouldBeCreatedSuccessfully() {
@@ -129,14 +103,4 @@ class ResilienceConfigTest {
         assertEquals("ollama-extraction", retry.getName());
     }
 
-    @Test
-    void huggingFaceCircuitBreaker_ShouldBeCreatedSuccessfully() {
-        // When
-        CircuitBreaker circuitBreaker = resilienceConfig.huggingFaceCircuitBreaker(meterRegistry);
-
-        // Then
-        assertNotNull(circuitBreaker);
-        assertEquals("huggingface-extraction", circuitBreaker.getName());
-        assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.getState());
-    }
 }
