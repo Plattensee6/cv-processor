@@ -35,68 +35,75 @@ spring:
     contexts: default
     default-schema: public
     liquibase-schema: public
-    liquibase-tablespace: 
     database-change-log-table: DATABASECHANGELOG
     database-change-log-lock-table: DATABASECHANGELOGLOCK
+    # Additional Liquibase settings for faster startup
 
 # Local Model Configuration (Ollama)
 ollama:
   host: ${OLLAMA_HOST:localhost}
   port: ${OLLAMA_PORT:11434}
-  model: ${OLLAMA_MODEL:llama3.2:3b}
+  model: ${OLLAMA_MODEL:llama3.2:1b}
   timeout: ${OLLAMA_TIMEOUT:120}
 
-# Hugging Face Configuration (fallback)
-huggingface:
-  api-key: ${HUGGINGFACE_API_KEY:}
-  model: ${HUGGINGFACE_MODEL:openai/gpt-4.1}
-  max-tokens: ${HUGGINGFACE_MAX_TOKENS:2000}
-  temperature: ${HUGGINGFACE_TEMPERATURE:0.1}
-  timeout: ${HUGGINGFACE_TIMEOUT:60}
-
+# File Upload Configuration
 file:
   upload:
     max-size: ${FILE_MAX_SIZE:10MB}
     allowed-types: ${FILE_ALLOWED_TYPES:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document}
 
+# Logging Configuration
 logging:
   level:
-    com.intuitech: DEBUG
+    com.intuitech.cvprocessor: DEBUG
     org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/cv-processor.log
+    max-size: 10MB
+    max-history: 30
 
+# Management and Monitoring (Spring Actuator)
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics
   endpoint:
     health:
       show-details: always
+  info:
+    env:
+      enabled: true
 
-# Resilience4j Configuration
-resilience4j:
-  circuitbreaker:
-    instances:
-      ollama-extraction:
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 30s
-        sliding-window-size: 10
-        minimum-number-of-calls: 5
-      huggingface-extraction:
-        failure-rate-threshold: 80
-        wait-duration-in-open-state: 10s
-        sliding-window-size: 20
-        minimum-number-of-calls: 10
-  retry:
-    instances:
-      ollama-extraction:
-        max-attempts: 3
-        wait-duration: 5s
-        exponential-backoff-multiplier: 2
-      huggingface-extraction:
-        max-attempts: 3
-        wait-duration: 2s
-        exponential-backoff-multiplier: 2
+# Server Configuration
+server:
+  port: ${APP_PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# OpenAPI (Swagger) Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    display-request-duration: true
+    display-operation-id: true
+    show-extensions: true
+    show-common-extensions: true
+    try-it-out-enabled: true
+  show-actuator: true
 
 ---
 spring:
@@ -104,9 +111,9 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:cvprocessor}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:cvprocessor}
+    username: ${POSTGRES_USER:cvuser}
+    password: ${POSTGRES_PASSWORD:cvpass}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -118,24 +125,49 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+    drop-first: false
+    contexts: default
+    default-schema: public
+    liquibase-schema: public
+    database-change-log-table: DATABASECHANGELOG
+    database-change-log-lock-table: DATABASECHANGELOGLOCK
+    # Additional Liquibase settings for faster startup
 
-huggingface:
-  api-key: ${HUGGINGFACE_API_KEY}
-  model: ${HUGGINGFACE_MODEL:openai/gpt-4.1}
-  max-tokens: ${HUGGINGFACE_MAX_TOKENS:2000}
-  temperature: ${HUGGINGFACE_TEMPERATURE:0.1}
-  timeout: ${HUGGINGFACE_TIMEOUT:60}
+# Local Model Configuration (Ollama)
+ollama:
+  host: ${OLLAMA_HOST:localhost}
+  port: ${OLLAMA_PORT:11434}
+  model: ${OLLAMA_MODEL:llama3.2:1b}
+  timeout: ${OLLAMA_TIMEOUT:120}
 
+# File Upload Configuration
 file:
   upload:
     max-size: ${FILE_MAX_SIZE:10MB}
     allowed-types: ${FILE_ALLOWED_TYPES:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document}
 
+# Logging Configuration
 logging:
   level:
-    com.intuitech: INFO
+    com.intuitech.cvprocessor: INFO
     org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/cv-processor.log
+    max-size: 10MB
+    max-history: 30
 
+# Management and Monitoring (Spring Actuator)
 management:
   endpoints:
     web:
@@ -144,25 +176,36 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  info:
+    env:
+      enabled: true
 
-# Resilience4j Configuration
-resilience4j:
-  circuitbreaker:
-    instances:
-      huggingface-extraction:
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 60s
-        sliding-window-size: 20
-        minimum-number-of-calls: 10
-  retry:
-    instances:
-      huggingface-extraction:
-        max-attempts: 3
-        wait-duration: 5s
-        exponential-backoff-multiplier: 2
+# Server Configuration
+server:
+  port: ${APP_PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# OpenAPI (Swagger) Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    display-request-duration: true
+    display-operation-id: true
+    show-extensions: true
+    show-common-extensions: true
+    try-it-out-enabled: true
+  show-actuator: true
 
 ---
-# Debug Profile Configuration
 spring:
   config:
     activate:
@@ -193,14 +236,74 @@ spring:
     contexts: default
     default-schema: public
     liquibase-schema: public
-    liquibase-tablespace: 
     database-change-log-table: DATABASECHANGELOG
     database-change-log-lock-table: DATABASECHANGELOGLOCK
+    # Additional Liquibase settings for faster startup
 
-# Debug specific logging
+# Local Model Configuration (Ollama)
+ollama:
+  host: ${OLLAMA_HOST:localhost}
+  port: ${OLLAMA_PORT:11434}
+  model: ${OLLAMA_MODEL:llama3.2:1b}
+  timeout: ${OLLAMA_TIMEOUT:120}
+
+# File Upload Configuration
+file:
+  upload:
+    max-size: ${FILE_MAX_SIZE:10MB}
+    allowed-types: ${FILE_ALLOWED_TYPES:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document}
+
+# Logging Configuration
 logging:
   level:
     com.intuitech.cvprocessor: DEBUG
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.transaction: DEBUG
+    org.springframework.orm.jpa: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/cv-processor.log
+    max-size: 10MB
+    max-history: 30
+
+# Management and Monitoring (Spring Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,beans,configprops
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+# Server Configuration
+server:
+  port: ${APP_PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# OpenAPI (Swagger) Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    display-request-duration: true
+    display-operation-id: true
+    show-extensions: true
+    show-common-extensions: true
+    try-it-out-enabled: true
+  show-actuator: true

@@ -94,7 +94,31 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="004-create-indexes" author="cv-processor">
+    <changeSet id="004-create-validation-result-errors-table" author="cv-processor">
+        <createTable tableName="validation_result_errors">
+            <column name="validation_result_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_validation_result_errors_validation_result" 
+                             referencedTableName="validation_results" referencedColumnNames="id"/>
+            </column>
+            <column name="error" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="005-create-validation-result-warnings-table" author="cv-processor">
+        <createTable tableName="validation_result_warnings">
+            <column name="validation_result_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_validation_result_warnings_validation_result" 
+                             referencedTableName="validation_results" referencedColumnNames="id"/>
+            </column>
+            <column name="warning" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="006-create-indexes" author="cv-processor" runOnChange="true">
         <createIndex tableName="cv_processing_requests" indexName="idx_cv_processing_requests_status">
             <column name="status"/>
         </createIndex>
@@ -106,6 +130,12 @@
         </createIndex>
         <createIndex tableName="validation_results" indexName="idx_validation_results_extracted_fields_id">
             <column name="extracted_fields_id"/>
+        </createIndex>
+        <createIndex tableName="validation_result_errors" indexName="idx_validation_result_errors_validation_result_id">
+            <column name="validation_result_id"/>
+        </createIndex>
+        <createIndex tableName="validation_result_warnings" indexName="idx_validation_result_warnings_validation_result_id">
+            <column name="validation_result_id"/>
         </createIndex>
     </changeSet>
 

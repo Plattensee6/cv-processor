@@ -17,22 +17,25 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-alpine
 
 # Install curl and jq for health checks and JSON processing
-RUN apt-get update && apt-get install -y curl jq && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl jq
 
 # Create app user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN addgroup -S appuser && adduser -S appuser -G appuser
 
 # Set working directory
 WORKDIR /app
+
+# Create logs directory
+RUN mkdir -p logs
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/cv-processor-*.jar app.jar
 
 # Change ownership to app user
-RUN chown appuser:appuser app.jar
+RUN chown -R appuser:appuser app.jar logs
 
 # Switch to non-root user
 USER appuser
@@ -47,8 +50,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
       curl -f http://localhost:8080/api/health/ollama/ready || exit 1
 
 # Set JVM options for containerized environment
-ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-ENV DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -XX:+UseStringDeduplication"
+# DEBUG_OPTS disabled for faster startup
+# ENV DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 
 # Run the application
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $DEBUG_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

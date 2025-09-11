@@ -1,0 +1,47 @@
+# Docker Compose Override for Development
+# This file is automatically loaded by docker-compose and overrides the base configuration
+version: '3.8'
+
+services:
+  cv-processor-app:
+    environment:
+      # Use development profile
+      SPRING_PROFILES_ACTIVE: dev
+      # Disable debug mode for faster startup
+      DEBUG_OPTS: ""
+      # Use smaller model for faster development
+      OLLAMA_MODEL: llama3.2:1b
+    # Mount target directory for faster development builds
+    volumes:
+      - ./target:/app/target:ro
+    # Reduce health check intervals for faster feedback
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 2
+      start_period: 20s
+
+  # Optimize Ollama for development
+  ollama:
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      # Use smaller model by default
+      - OLLAMA_MODEL=llama3.2:1b
+    # Faster health checks
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 3s
+      retries: 2
+      start_period: 10s
+
+  # Optimize PostgreSQL for development
+  postgres:
+    # Faster health checks
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cvuser} -d ${POSTGRES_DB:-cvprocessor} -h localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
