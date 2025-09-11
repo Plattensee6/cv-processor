@@ -11,21 +11,18 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class LanguagesValidator {
+public class LanguagesValidator implements Validator {
+    
+    private static final String FIELD_NAME = "languages";
 
-    /**
-     * Validate languages
-     * 
-     * @param extractedFields the extracted fields
-     * @return validation result
-     */
-    public ValidationResult validate(ExtractedFields extractedFields) {
+    @Override
+    public ValidationResultDTO validate(ExtractedFields extractedFields) {
         log.debug("Validating languages");
 
         String languages = extractedFields.getLanguages();
         
         if (languages == null || languages.trim().isEmpty()) {
-            return ValidationResult.invalid("Languages not found");
+            return ValidationResultDTO.invalid("Languages not found", FIELD_NAME);
         }
 
         String lowerCaseLanguages = languages.toLowerCase();
@@ -36,14 +33,14 @@ public class LanguagesValidator {
                             containsLanguage(lowerCaseLanguages, "angol");
 
         if (!hasHungarian) {
-            return ValidationResult.invalid("Languages must include Hungarian");
+            return ValidationResultDTO.invalid("Languages must include Hungarian", FIELD_NAME);
         }
 
         if (!hasEnglish) {
-            return ValidationResult.invalid("Languages must include English");
+            return ValidationResultDTO.invalid("Languages must include English", FIELD_NAME);
         }
 
-        return ValidationResult.valid("Languages include required Hungarian and English");
+        return ValidationResultDTO.valid("Languages include required Hungarian and English", FIELD_NAME);
     }
 
     /**
@@ -53,32 +50,13 @@ public class LanguagesValidator {
         return languages.contains(language);
     }
 
-    /**
-     * Validation result class
-     */
-    public static class ValidationResult {
-        private final boolean valid;
-        private final String message;
+    @Override
+    public String getFieldName() {
+        return FIELD_NAME;
+    }
 
-        private ValidationResult(boolean valid, String message) {
-            this.valid = valid;
-            this.message = message;
-        }
-
-        public static ValidationResult valid(String message) {
-            return new ValidationResult(true, message);
-        }
-
-        public static ValidationResult invalid(String message) {
-            return new ValidationResult(false, message);
-        }
-
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+    @Override
+    public int getPriority() {
+        return 30; // Medium priority
     }
 }

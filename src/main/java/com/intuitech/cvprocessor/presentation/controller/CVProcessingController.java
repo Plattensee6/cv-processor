@@ -3,6 +3,13 @@ package com.intuitech.cvprocessor.presentation.controller;
 import com.intuitech.cvprocessor.application.service.CVProcessingService;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +26,7 @@ import java.util.Map;
 @RequestMapping("/api/cv/process")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "CV Processing", description = "CV processing and field extraction endpoints")
 public class CVProcessingController {
 
     private final CVProcessingService cvProcessingService;
@@ -29,8 +37,72 @@ public class CVProcessingController {
      * @param requestId the processing request ID
      * @return processing result
      */
+    @Operation(
+            summary = "Process CV document",
+            description = "Process a previously uploaded CV document to extract fields using LLM and validate the extracted data."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "CV processed successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Success Response",
+                                    value = """
+                                            {
+                                                "requestId": 1,
+                                                "status": "COMPLETED",
+                                                "message": "CV processed successfully",
+                                                "processedAt": "2024-01-15T10:35:00"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request - Processing failed",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Error Response",
+                                    value = """
+                                            {
+                                                "error": "CV processing failed",
+                                                "message": "Processing request not found",
+                                                "timestamp": "2024-01-15T10:35:00"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Server Error",
+                                    value = """
+                                            {
+                                                "error": "Internal server error",
+                                                "message": "An unexpected error occurred",
+                                                "timestamp": "2024-01-15T10:35:00"
+                                            }
+                                            """
+                            )
+                    )
+            )
+    })
     @PostMapping("/{requestId}")
-    public ResponseEntity<?> processCV(@PathVariable Long requestId) {
+    public ResponseEntity<?> processCV(
+            @Parameter(
+                    description = "Unique identifier of the processing request",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long requestId) {
         log.info("Received CV processing request for ID: {}", requestId);
 
         try {
@@ -70,8 +142,78 @@ public class CVProcessingController {
      * @param requestId the request ID
      * @return extracted fields
      */
+    @Operation(
+            summary = "Get extracted fields",
+            description = "Retrieve the extracted fields from a processed CV document."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Extracted fields retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Success Response",
+                                    value = """
+                                            {
+                                                "requestId": 1,
+                                                "status": "COMPLETED",
+                                                "extractedFields": {
+                                                    "workExperienceYears": 2,
+                                                    "workExperienceDetails": "Software Engineer at TechCorp",
+                                                    "skills": "Java, Spring Boot, LLM, AI, PostgreSQL",
+                                                    "languages": "Hungarian (native), English (fluent)",
+                                                    "profile": "Passionate software engineer with interest in GenAI and Java development"
+                                                },
+                                                "extractedAt": "2024-01-15T10:35:00"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Extracted fields not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Not Found",
+                                    value = """
+                                            {
+                                                "error": "Not Found",
+                                                "message": "Extracted fields not found for request ID: 999",
+                                                "timestamp": "2024-01-15T10:35:00"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Server Error",
+                                    value = """
+                                            {
+                                                "error": "Internal server error",
+                                                "message": "An unexpected error occurred",
+                                                "timestamp": "2024-01-15T10:35:00"
+                                            }
+                                            """
+                            )
+                    )
+            )
+    })
     @GetMapping("/{requestId}/fields")
-    public ResponseEntity<?> getExtractedFields(@PathVariable Long requestId) {
+    public ResponseEntity<?> getExtractedFields(
+            @Parameter(
+                    description = "Unique identifier of the processing request",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long requestId) {
         log.debug("Retrieving extracted fields for request ID: {}", requestId);
 
         try {

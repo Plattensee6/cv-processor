@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  * Provides REST endpoints for monitoring Ollama service health and status.
  */
 @RestController
-@RequestMapping("/api/health")
+@RequestMapping("/api/health/ollama")
 @RequiredArgsConstructor
 @Slf4j
 public class OllamaHealthController {
@@ -29,7 +29,7 @@ public class OllamaHealthController {
      * 
      * @return Ollama service health status
      */
-    @GetMapping("/ollama")
+    @GetMapping
     public ResponseEntity<Map<String, Object>> ollamaHealth() {
         log.debug("Ollama health check requested");
         
@@ -58,7 +58,7 @@ public class OllamaHealthController {
      * 
      * @return detailed health information including response time
      */
-    @GetMapping("/ollama/detailed")
+    @GetMapping("/detailed")
     public ResponseEntity<Map<String, Object>> ollamaDetailedHealth() {
         log.debug("Ollama detailed health check requested");
         
@@ -100,7 +100,7 @@ public class OllamaHealthController {
      * 
      * @return service configuration details
      */
-    @GetMapping("/ollama/config")
+    @GetMapping("/config")
     public ResponseEntity<Map<String, Object>> ollamaConfig() {
         log.debug("Ollama configuration requested");
         
@@ -122,7 +122,7 @@ public class OllamaHealthController {
      * 
      * @return CompletableFuture with health status
      */
-    @GetMapping("/ollama/async")
+    @GetMapping("/async")
     public CompletableFuture<ResponseEntity<Map<String, Object>>> ollamaHealthAsync() {
         log.debug("Async Ollama health check requested");
         
@@ -151,7 +151,7 @@ public class OllamaHealthController {
      * 
      * @return simple ready/not ready status
      */
-    @GetMapping("/ollama/ready")
+    @GetMapping("/ready")
     public ResponseEntity<Map<String, Object>> ollamaReady() {
         log.debug("Ollama readiness check requested");
         

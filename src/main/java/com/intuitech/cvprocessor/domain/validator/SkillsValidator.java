@@ -11,21 +11,18 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class SkillsValidator {
+public class SkillsValidator implements Validator {
+    
+    private static final String FIELD_NAME = "skills";
 
-    /**
-     * Validate skills
-     * 
-     * @param extractedFields the extracted fields
-     * @return validation result
-     */
-    public ValidationResult validate(ExtractedFields extractedFields) {
+    @Override
+    public ValidationResultDTO validate(ExtractedFields extractedFields) {
         log.debug("Validating skills");
 
         String skills = extractedFields.getSkills();
         
         if (skills == null || skills.trim().isEmpty()) {
-            return ValidationResult.invalid("Skills not found");
+            return ValidationResultDTO.invalid("Skills not found", FIELD_NAME);
         }
 
         String lowerCaseSkills = skills.toLowerCase();
@@ -36,14 +33,14 @@ public class SkillsValidator {
                         containsSkill(lowerCaseSkills, "ai");
 
         if (!hasJava) {
-            return ValidationResult.invalid("Skills must include Java");
+            return ValidationResultDTO.invalid("Skills must include Java", FIELD_NAME);
         }
 
         if (!hasLLM) {
-            return ValidationResult.invalid("Skills must include LLM or AI");
+            return ValidationResultDTO.invalid("Skills must include LLM or AI", FIELD_NAME);
         }
 
-        return ValidationResult.valid("Skills include required Java and LLM/AI");
+        return ValidationResultDTO.valid("Skills include required Java and LLM/AI", FIELD_NAME);
     }
 
     /**
@@ -53,32 +50,13 @@ public class SkillsValidator {
         return skills.contains(skill);
     }
 
-    /**
-     * Validation result class
-     */
-    public static class ValidationResult {
-        private final boolean valid;
-        private final String message;
+    @Override
+    public String getFieldName() {
+        return FIELD_NAME;
+    }
 
-        private ValidationResult(boolean valid, String message) {
-            this.valid = valid;
-            this.message = message;
-        }
-
-        public static ValidationResult valid(String message) {
-            return new ValidationResult(true, message);
-        }
-
-        public static ValidationResult invalid(String message) {
-            return new ValidationResult(false, message);
-        }
-
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+    @Override
+    public int getPriority() {
+        return 20; // Medium priority
     }
 }

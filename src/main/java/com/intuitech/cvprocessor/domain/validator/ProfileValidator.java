@@ -11,21 +11,18 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class ProfileValidator {
+public class ProfileValidator implements Validator {
+    
+    private static final String FIELD_NAME = "profile";
 
-    /**
-     * Validate profile
-     * 
-     * @param extractedFields the extracted fields
-     * @return validation result
-     */
-    public ValidationResult validate(ExtractedFields extractedFields) {
+    @Override
+    public ValidationResultDTO validate(ExtractedFields extractedFields) {
         log.debug("Validating profile");
 
         String profile = extractedFields.getProfile();
         
         if (profile == null || profile.trim().isEmpty()) {
-            return ValidationResult.invalid("Profile not found");
+            return ValidationResultDTO.invalid("Profile not found", FIELD_NAME);
         }
 
         String lowerCaseProfile = profile.toLowerCase();
@@ -36,14 +33,14 @@ public class ProfileValidator {
         boolean hasJava = containsInterest(lowerCaseProfile, "java");
 
         if (!hasGenAI) {
-            return ValidationResult.invalid("Profile must include interest in GenAI or Generative AI");
+            return ValidationResultDTO.invalid("Profile must include interest in GenAI or Generative AI", FIELD_NAME);
         }
 
         if (!hasJava) {
-            return ValidationResult.invalid("Profile must include interest in Java");
+            return ValidationResultDTO.invalid("Profile must include interest in Java", FIELD_NAME);
         }
 
-        return ValidationResult.valid("Profile includes required interest in GenAI and Java");
+        return ValidationResultDTO.valid("Profile includes required interest in GenAI and Java", FIELD_NAME);
     }
 
     /**
@@ -53,32 +50,13 @@ public class ProfileValidator {
         return profile.contains(interest);
     }
 
-    /**
-     * Validation result class
-     */
-    public static class ValidationResult {
-        private final boolean valid;
-        private final String message;
+    @Override
+    public String getFieldName() {
+        return FIELD_NAME;
+    }
 
-        private ValidationResult(boolean valid, String message) {
-            this.valid = valid;
-            this.message = message;
-        }
-
-        public static ValidationResult valid(String message) {
-            return new ValidationResult(true, message);
-        }
-
-        public static ValidationResult invalid(String message) {
-            return new ValidationResult(false, message);
-        }
-
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+    @Override
+    public int getPriority() {
+        return 40; // Lower priority
     }
 }

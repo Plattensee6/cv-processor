@@ -2,31 +2,32 @@ package com.intuitech.cvprocessor.application.service;
 
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.domain.model.ValidationResult;
-import com.intuitech.cvprocessor.domain.validator.*;
+import com.intuitech.cvprocessor.domain.validator.ValidationResultDTO;
+import com.intuitech.cvprocessor.domain.validator.ValidatorRegistry;
 import com.intuitech.cvprocessor.infrastructure.repository.ValidationResultRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Service for validating extracted CV fields
  * 
- * Orchestrates validation of all extracted fields using domain validators.
+ * Uses ValidatorRegistry to orchestrate validation of all extracted fields.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ValidationService {
 
-    private final WorkExperienceValidator workExperienceValidator;
-    private final SkillsValidator skillsValidator;
-    private final LanguagesValidator languagesValidator;
-    private final ProfileValidator profileValidator;
+    private final ValidatorRegistry validatorRegistry;
     private final ValidationResultRepository validationResultRepository;
 
     /**
-     * Validate extracted fields
+     * Validate extracted fields using all registered validators
      * 
      * @param extractedFields the extracted fields to validate
      * @return validation result entity
@@ -37,35 +38,28 @@ public class ValidationService {
         log.info("Starting validation for extracted fields ID: {}", extractedFields.getId());
 
         try {
-            // Validate work experience
-            WorkExperienceValidator.ValidationResult workExpResult = 
-                workExperienceValidator.validate(extractedFields);
+            // Execute all validators
+            Map<String, ValidationResultDTO> validationResults =
+                validatorRegistry.validateAll(extractedFields);
 
-            // Validate skills
-            SkillsValidator.ValidationResult skillsResult = 
-                skillsValidator.validate(extractedFields);
-
-            // Validate languages
-            LanguagesValidator.ValidationResult languagesResult = 
-                languagesValidator.validate(extractedFields);
-
-            // Validate profile
-            ProfileValidator.ValidationResult profileResult = 
-                profileValidator.validate(extractedFields);
+            // Extract results for each field
+            ValidationResultDTO workExpResult = validationResults.get("workExperience");
+            ValidationResultDTO skillsResult = validationResults.get("skills");
+            ValidationResultDTO languagesResult = validationResults.get("languages");
+            ValidationResultDTO profileResult = validationResults.get("profile");
 
             // Create validation result entity
             ValidationResult validationResult = ValidationResult.builder()
                     .extractedFields(extractedFields)
-                    .workExperienceValid(workExpResult.isValid())
-                    .workExperienceMessage(workExpResult.getMessage())
-                    .skillsValid(skillsResult.isValid())
-                    .skillsMessage(skillsResult.getMessage())
-                    .languagesValid(languagesResult.isValid())
-                    .languagesMessage(languagesResult.getMessage())
-                    .profileValid(profileResult.isValid())
-                    .profileMessage(profileResult.getMessage())
-                    .overallValid(workExpResult.isValid() && skillsResult.isValid() && 
-                                languagesResult.isValid() && profileResult.isValid())
+                    .workExperienceValid(workExpResult != null ? workExpResult.isValid() : false)
+                    .workExperienceMessage(workExpResult != null ? workExpResult.getMessage() : "Validator not found")
+                    .skillsValid(skillsResult != null ? skillsResult.isValid() : false)
+                    .skillsMessage(skillsResult != null ? skillsResult.getMessage() : "Validator not found")
+                    .languagesValid(languagesResult != null ? languagesResult.isValid() : false)
+                    .languagesMessage(languagesResult != null ? languagesResult.getMessage() : "Validator not found")
+                    .profileValid(profileResult != null ? profileResult.isValid() : false)
+                    .profileMessage(profileResult != null ? profileResult.getMessage() : "Validator not found")
+                    .overallValid(validationResults.values().stream().allMatch(ValidationResultDTO::isValid))
                     .build();
 
             // Save validation result
@@ -95,6 +89,15 @@ public class ValidationService {
 
         return validationResultRepository.findByExtractedFieldsId(extractedFieldsId)
                 .orElseThrow(() -> new ValidationException("Validation result not found: " + extractedFieldsId));
+    }
+
+    /**
+     * Get all registered validators
+     * 
+     * @return list of validators
+     */
+    public List<com.intuitech.cvprocessor.domain.validator.Validator> getValidators() {
+        return validatorRegistry.getValidators();
     }
 
     /**

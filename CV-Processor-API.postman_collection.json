@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "cv-processor-api-collection-v2",
 		"name": "CV Processor API - Updated",
-		"description": "Comprehensive Postman collection for testing the CV Processing Application endpoints. This collection includes all API endpoints for file upload, CV processing, field extraction, validation, and monitoring.\n\n## Features:\n- Complete API endpoint coverage (15+ endpoints)\n- Automated test scenarios with CV samples\n- Error handling and edge case testing\n- Automatic requestId management\n- Health checks and monitoring\n- Enhanced test scripts with better validation\n- Performance testing capabilities\n\n## Usage:\n1. Import this collection into Postman\n2. Set the baseUrl variable (default: http://localhost:8080)\n3. Run the test scenarios to validate the complete workflow\n4. Use the CV-1.md and CV-2.md files for file upload tests\n5. Check the Test Scenarios folder for comprehensive workflow testing",
+		"description": "Comprehensive Postman collection for testing the CV Processing Application endpoints. This collection includes all API endpoints for file upload, CV processing, field extraction, validation, monitoring, and Ollama service management.\n\n## Features:\n- Complete API endpoint coverage (25+ endpoints)\n- Automated test scenarios with CV samples\n- Error handling and edge case testing\n- Automatic requestId management\n- Health checks and monitoring\n- Ollama service health and administration\n- Spring Boot Actuator endpoints\n- Enhanced test scripts with better validation\n- Performance testing capabilities\n\n## Usage:\n1. Import this collection into Postman\n2. Set the baseUrl variable (default: http://localhost:8080)\n3. Run the test scenarios to validate the complete workflow\n4. Use the CV-1.md and CV-2.md files for file upload tests\n5. Check the Test Scenarios folder for comprehensive workflow testing\n6. Use Ollama Health & Admin endpoints to monitor LLM service status",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "cv-processor-v2"
 	},
@@ -764,21 +764,21 @@
 					]
 				},
 				{
-					"name": "Prometheus Metrics",
+					"name": "Spring Boot Actuator Info",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/actuator/prometheus",
+							"raw": "{{baseUrl}}/actuator/info",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"actuator",
-								"prometheus"
+								"info"
 							]
 						},
-						"description": "Prometheus metrics endpoint for external monitoring system integration."
+						"description": "Spring Boot actuator info endpoint for application information."
 					},
 					"response": [],
 					"event": [
@@ -791,10 +791,9 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test('Response contains Prometheus format', function () {",
-									"    const responseText = pm.response.text();",
-									"    pm.expect(responseText).to.include('#');",
-									"    pm.expect(responseText).to.include('_total');",
+									"pm.test('Actuator info response is valid', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
 									"});"
 								]
 							}
@@ -802,7 +801,336 @@
 					]
 				}
 			],
-			"description": "Metrics and monitoring endpoints for application performance and health tracking."
+			"description": "Metrics and monitoring endpoints for application performance and health tracking using Spring Actuator."
+		},
+		{
+			"name": "Ollama Health & Admin",
+			"item": [
+				{
+					"name": "Ollama Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health/ollama",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"ollama"
+							]
+						},
+						"description": "Check Ollama service health status and availability."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200 or 503', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 503]);",
+									"});",
+									"",
+									"pm.test('Response contains Ollama health info', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"    pm.expect(responseJson).to.have.property('service');",
+									"    pm.expect(responseJson.service).to.eql('Ollama');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ollama Detailed Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health/ollama/detailed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"ollama",
+								"detailed"
+							]
+						},
+						"description": "Get detailed Ollama service health information including model status."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200 or 503', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 503]);",
+									"});",
+									"",
+									"pm.test('Response contains detailed Ollama info', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"    pm.expect(responseJson).to.have.property('service');",
+									"    pm.expect(responseJson).to.have.property('model');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ollama Configuration",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health/ollama/config",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"ollama",
+								"config"
+							]
+						},
+						"description": "Get Ollama service configuration information."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains Ollama config', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('host');",
+									"    pm.expect(responseJson).to.have.property('port');",
+									"    pm.expect(responseJson).to.have.property('model');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ollama Async Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health/ollama/async",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"ollama",
+								"async"
+							]
+						},
+						"description": "Get Ollama health information asynchronously."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200 or 503', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 503]);",
+									"});",
+									"",
+									"pm.test('Response contains async health info', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"    pm.expect(responseJson).to.have.property('service');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ollama Ready Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health/ollama/ready",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"ollama",
+								"ready"
+							]
+						},
+						"description": "Check if Ollama service is ready to process requests."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200 or 503', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 503]);",
+									"});",
+									"",
+									"pm.test('Response contains ready status', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('ready');",
+									"    pm.expect(responseJson.ready).to.be.a('boolean');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "List Ollama Models",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/ollama/models",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"ollama",
+								"models"
+							]
+						},
+						"description": "List available Ollama models."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains models list', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('models');",
+									"    pm.expect(responseJson.models).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Model Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/ollama/models/llama3.2:3b/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"ollama",
+								"models",
+								"llama3.2:3b",
+								"status"
+							]
+						},
+						"description": "Get status of a specific Ollama model."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains model status', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('model');",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ollama Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/ollama/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"ollama",
+								"metrics"
+							]
+						},
+						"description": "Get Ollama service metrics and statistics."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains Ollama metrics', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"description": "Ollama service health monitoring and administration endpoints."
 		},
 		{
 			"name": "Test Scenarios",

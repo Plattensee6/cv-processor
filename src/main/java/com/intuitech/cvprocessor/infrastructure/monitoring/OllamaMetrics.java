@@ -51,8 +51,9 @@ public class OllamaMetrics {
                 .register(meterRegistry);
         
         this.ollamaFallbackTriggered = Counter.builder("ollama_fallback_triggered_total")
-                .description("Total number of times fallback to HuggingFace was triggered")
+                .description("Total number of fallback triggers")
                 .register(meterRegistry);
+        
         
         // Initialize timers
         this.ollamaResponseTime = Timer.builder("ollama_response_time_seconds")

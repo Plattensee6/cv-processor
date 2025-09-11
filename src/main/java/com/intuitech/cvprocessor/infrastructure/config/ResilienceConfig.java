@@ -111,37 +111,4 @@ public class ResilienceConfig {
         return retry;
     }
 
-    /**
-     * Circuit breaker configuration for HuggingFace fallback
-     */
-    @Bean
-    public CircuitBreaker huggingFaceCircuitBreaker(MeterRegistry meterRegistry) {
-        CircuitBreakerConfig config = CircuitBreakerConfig.custom()
-                .failureRateThreshold(60) // 60% failure rate threshold
-                .waitDurationInOpenState(Duration.ofSeconds(60)) // Wait 60s before trying again
-                .slidingWindowSize(5) // Last 5 calls
-                .minimumNumberOfCalls(3) // Minimum 3 calls before calculating failure rate
-                .permittedNumberOfCallsInHalfOpenState(2) // Allow 2 calls in half-open state
-                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
-                .recordExceptions(
-                    java.net.ConnectException.class,
-                    java.net.SocketTimeoutException.class,
-                    org.springframework.web.client.ResourceAccessException.class,
-                    org.springframework.web.client.HttpClientErrorException.class,
-                    org.springframework.web.client.HttpServerErrorException.class
-                )
-                .build();
-
-        CircuitBreaker circuitBreaker = CircuitBreaker.of("huggingface-extraction", config);
-        
-        // Add event listeners for monitoring
-        circuitBreaker.getEventPublisher()
-                .onStateTransition(event -> {
-                    log.info("HuggingFace circuit breaker state transition: {} -> {}", 
-                            event.getStateTransition().getFromState(), 
-                            event.getStateTransition().getToState());
-                });
-
-        return circuitBreaker;
-    }
 }

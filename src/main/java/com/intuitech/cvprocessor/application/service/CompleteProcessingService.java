@@ -5,6 +5,7 @@ import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.domain.model.ValidationResult;
 import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
+import com.intuitech.cvprocessor.infrastructure.repository.ExtractedFieldsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class CompleteProcessingService {
     private final CVProcessingService cvProcessingService;
     private final ValidationService validationService;
     private final CVProcessingRequestRepository cvProcessingRequestRepository;
+    private final ExtractedFieldsRepository extractedFieldsRepository;
 
     /**
      * Process CV completely - extract fields and validate
@@ -37,10 +39,8 @@ public class CompleteProcessingService {
 
         try {
             CVProcessingRequest request = cvProcessingService.processCV(requestId);
-            ExtractedFields extractedFields = request.getExtractedFields();
-            if (extractedFields == null) {
-                throw new CompleteProcessingException("No extracted fields found for request: " + requestId);
-            }
+            ExtractedFields extractedFields = extractedFieldsRepository.findByCvProcessingRequestId(requestId)
+                    .orElseThrow(() -> new CompleteProcessingException("No extracted fields found for request: " + requestId));
             ValidationResult validationResult = validationService.validateFields(extractedFields);
             ProcessingResponseDTO response = buildCompleteResponse(request, extractedFields, validationResult);
             log.info("Complete CV processing successful for request ID: {}", requestId);
@@ -73,10 +73,8 @@ public class CompleteProcessingService {
                     .orElseThrow(() -> new CompleteProcessingException("Processing request not found: " + requestId));
 
             // Get extracted fields
-            ExtractedFields extractedFields = request.getExtractedFields();
-            if (extractedFields == null) {
-                throw new CompleteProcessingException("No extracted fields found for request: " + requestId);
-            }
+            ExtractedFields extractedFields = extractedFieldsRepository.findByCvProcessingRequestId(requestId)
+                    .orElseThrow(() -> new CompleteProcessingException("No extracted fields found for request: " + requestId));
 
             // Get validation result
             ValidationResult validationResult = validationService.getValidationResult(extractedFields.getId());

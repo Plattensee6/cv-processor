@@ -22,8 +22,8 @@ The CV processing application has been fully implemented following a milestone-b
 - **Upload metadata** storage and retrieval
 
 ### ✅ Milestone 3: LLM Integration & Field Extraction
-- **OpenAI client configuration** with proper timeouts
-- **Field extraction service** using GPT-4
+- **Ollama integration** with proper timeouts
+- **Field extraction service** using Ollama models
 - **Structured prompt building** for CV analysis
 - **Extraction of all 4 fields**: Work Experience, Skills, Languages, Profile
 - **Error handling** for LLM failures with retry and circuit breaker
@@ -108,7 +108,7 @@ The application follows **Clean Architecture + DDD** principles:
 - **Docker Compose** for local development
 
 ### LLM Integration
-- **OpenAI GPT-4** for field extraction
+- **Ollama local models** for field extraction
 - **Resilience4j** for circuit breaker and retry
 - **Jackson** for JSON processing
 
@@ -118,7 +118,7 @@ The application follows **Clean Architecture + DDD** principles:
 
 ### Monitoring & Metrics
 - **Micrometer** for application metrics
-- **Prometheus** integration
+- **Spring Actuator** monitoring
 - **Structured logging** with correlation IDs
 
 ### Additional Libraries
@@ -218,8 +218,7 @@ java -jar target/cv-processor-1.0.0.jar --spring.profiles.active=prod
 ### Environment Variables
 - `SPRING_PROFILES_ACTIVE` - Active profile (dev/prod)
 - `POSTGRES_*` - Database connection settings
-- `OPENAI_API_KEY` - OpenAI API key
-- `OPENAI_MODEL` - LLM model (default: gpt-4)
+- `OLLAMA_*` - Ollama local model configuration
 - `FILE_MAX_SIZE` - Maximum file size (default: 10MB)
 
 ### Profiles

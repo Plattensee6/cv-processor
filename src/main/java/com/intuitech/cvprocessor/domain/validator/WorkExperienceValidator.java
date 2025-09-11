@@ -11,65 +11,42 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class WorkExperienceValidator {
-
+public class WorkExperienceValidator implements Validator {
+    
     private static final int MIN_YEARS = 0;
     private static final int MAX_YEARS = 2;
+    private static final String FIELD_NAME = "workExperience";
 
-    /**
-     * Validate work experience
-     * 
-     * @param extractedFields the extracted fields
-     * @return validation result
-     */
-    public ValidationResult validate(ExtractedFields extractedFields) {
+    @Override
+    public ValidationResultDTO validate(ExtractedFields extractedFields) {
         log.debug("Validating work experience");
 
         Integer years = extractedFields.getWorkExperienceYears();
         
         if (years == null) {
-            return ValidationResult.invalid("Work experience years not found");
+            return ValidationResultDTO.invalid("Work experience years not found", FIELD_NAME);
         }
 
         if (years < MIN_YEARS || years > MAX_YEARS) {
-            return ValidationResult.invalid(
+            return ValidationResultDTO.invalid(
                 String.format("Work experience %d years is not between %d and %d years", 
-                    years, MIN_YEARS, MAX_YEARS)
+                    years, MIN_YEARS, MAX_YEARS), FIELD_NAME
             );
         }
 
-        return ValidationResult.valid(
+        return ValidationResultDTO.valid(
             String.format("Work experience %d years is within valid range (%d-%d years)", 
-                years, MIN_YEARS, MAX_YEARS)
+                years, MIN_YEARS, MAX_YEARS), FIELD_NAME
         );
     }
 
-    /**
-     * Validation result class
-     */
-    public static class ValidationResult {
-        private final boolean valid;
-        private final String message;
+    @Override
+    public String getFieldName() {
+        return FIELD_NAME;
+    }
 
-        private ValidationResult(boolean valid, String message) {
-            this.valid = valid;
-            this.message = message;
-        }
-
-        public static ValidationResult valid(String message) {
-            return new ValidationResult(true, message);
-        }
-
-        public static ValidationResult invalid(String message) {
-            return new ValidationResult(false, message);
-        }
-
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+    @Override
+    public int getPriority() {
+        return 10; // High priority
     }
 }
