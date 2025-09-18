@@ -1,6 +1,10 @@
 spring:
+  profiles:
+    active: test
+  application:
+    name: cv-processor-test
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: 
     driver-class-name: org.h2.Driver
@@ -8,11 +12,93 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  liquibase:
+    enabled: false
   h2:
     console:
       enabled: true
 
+# Test specific configurations
+ollama:
+  host: localhost
+  port: 11434
+  model: llama3.2:3b
+  timeout: 30
+
+huggingface:
+  api-key: test-api-key
+  model: test-model
+  max-tokens: 1000
+  temperature: 0.1
+  timeout: 30
+
+file:
+  upload:
+    max-size: 5MB
+    allowed-types: application/pdf,application/msword
+
+# Test logging configuration
 logging:
   level:
     com.intuitech: DEBUG
-    org.springframework.web: WARN
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.testcontainers: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Test management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Test Resilience4j Configuration (more lenient for testing)
+resilience4j:
+  circuitbreaker:
+    instances:
+      ollama-extraction:
+        failure-rate-threshold: 90
+        wait-duration-in-open-state: 5s
+        sliding-window-size: 5
+        minimum-number-of-calls: 2
+      huggingface-extraction:
+        failure-rate-threshold: 90
+        wait-duration-in-open-state: 5s
+        sliding-window-size: 5
+        minimum-number-of-calls: 2
+  retry:
+    instances:
+      ollama-extraction:
+        max-attempts: 2
+        wait-duration: 1s
+        exponential-backoff-multiplier: 1
+      huggingface-extraction:
+        max-attempts: 2
+        wait-duration: 1s
+        exponential-backoff-multiplier: 1
+
+# Test specific properties
+test:
+  data:
+    cleanup: true
+    fixtures:
+      enabled: true
+  mock:
+    external-services: true
+    ollama:
+      enabled: true
+      response-time: 100ms
+    huggingface:
+      enabled: true
+      response-time: 200ms
