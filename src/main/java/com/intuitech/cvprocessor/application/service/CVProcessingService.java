@@ -6,6 +6,7 @@ import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.infrastructure.repository.ExtractedFieldsRepository;
 import com.intuitech.cvprocessor.infrastructure.service.HuggingFaceFieldExtractor;
+import com.intuitech.cvprocessor.infrastructure.service.OllamaFieldExtractor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,8 @@ public class CVProcessingService {
 
     private final CVProcessingRequestRepository cvProcessingRequestRepository;
     private final ExtractedFieldsRepository extractedFieldsRepository;
-    private final HuggingFaceFieldExtractor fieldExtractor;
+    private final OllamaFieldExtractor ollamaFieldExtractor;
+    private final HuggingFaceFieldExtractor huggingFaceFieldExtractor;
 
     /**
      * Process CV document and extract fields
@@ -45,8 +47,15 @@ public class CVProcessingService {
             request.setStatus(CVProcessingRequest.ProcessingStatus.EXTRACTING);
             cvProcessingRequestRepository.save(request);
 
-            // Extract fields using LLM
-            ExtractedFields extractedFields = fieldExtractor.extractFields(request.getParsedText());
+            // Extract fields using Ollama (with HuggingFace fallback)
+            ExtractedFields extractedFields;
+            try {
+                log.info("Attempting field extraction with Ollama");
+                extractedFields = ollamaFieldExtractor.extractFields(request.getParsedText());
+            } catch (Exception e) {
+                log.warn("Ollama extraction failed, falling back to HuggingFace: {}", e.getMessage());
+                extractedFields = huggingFaceFieldExtractor.extractFields(request.getParsedText());
+            }
 
             // Link extracted fields to processing request
             extractedFields.setCvProcessingRequest(request);

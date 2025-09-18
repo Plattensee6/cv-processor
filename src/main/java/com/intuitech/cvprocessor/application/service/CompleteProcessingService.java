@@ -36,24 +36,15 @@ public class CompleteProcessingService {
         log.info("Starting complete CV processing for request ID: {}", requestId);
 
         try {
-            // Step 1: Extract fields using LLM
             CVProcessingRequest request = cvProcessingService.processCV(requestId);
-            
-            // Step 2: Get extracted fields
             ExtractedFields extractedFields = request.getExtractedFields();
             if (extractedFields == null) {
                 throw new CompleteProcessingException("No extracted fields found for request: " + requestId);
             }
-
-            // Step 3: Validate extracted fields
             ValidationResult validationResult = validationService.validateFields(extractedFields);
-
-            // Step 4: Build complete response
             ProcessingResponseDTO response = buildCompleteResponse(request, extractedFields, validationResult);
-
             log.info("Complete CV processing successful for request ID: {}", requestId);
             return response;
-
         } catch (CVProcessingService.CVProcessingException e) {
             log.error("CV processing failed for request ID {}: {}", requestId, e.getMessage());
             throw new CompleteProcessingException("CV processing failed", e);
