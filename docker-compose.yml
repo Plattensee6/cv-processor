@@ -12,11 +12,86 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cvuser"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cvuser} -d ${POSTGRES_DB:-cvprocessor}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - cv-processor-network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: cv-processor-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - cv-processor-network
+    restart: unless-stopped
+
+  cv-processor-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cv-processor-app
+    environment:
+      # Database Configuration
+      POSTGRES_DB: ${POSTGRES_DB:-cvprocessor}
+      POSTGRES_USER: ${POSTGRES_USER:-cvuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cvpass}
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: postgres
+      
+      # Local Model Configuration (Ollama)
+      OLLAMA_HOST: ${OLLAMA_HOST:-ollama}
+      OLLAMA_PORT: ${OLLAMA_PORT:-11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+      
+      # Hugging Face Configuration (fallback)
+      HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY:-}
+      HUGGINGFACE_MODEL: ${HUGGINGFACE_MODEL:-microsoft/DialoGPT-medium}
+      HUGGINGFACE_MAX_TOKENS: ${HUGGINGFACE_MAX_TOKENS:-2000}
+      HUGGINGFACE_TEMPERATURE: ${HUGGINGFACE_TEMPERATURE:-0.1}
+      HUGGINGFACE_TIMEOUT: ${HUGGINGFACE_TIMEOUT:-60}
+      
+      # Application Configuration
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      FILE_MAX_SIZE: ${FILE_MAX_SIZE:-10MB}
+      FILE_ALLOWED_TYPES: ${FILE_ALLOWED_TYPES:-application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document}
+      
+      # JVM Configuration
+      JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+      DEBUG_OPTS: "${DEBUG_OPTS:--agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005}"
+      
+      # Liquibase Configuration
+      SPRING_LIQUIBASE_ENABLED: "true"
+      SPRING_LIQUIBASE_DROP_FIRST: "false"
+      SPRING_LIQUIBASE_CONTEXTS: "default"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+      - "${DEBUG_PORT:-5005}:5005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - cv-processor-network
+    restart: unless-stopped
+
+networks:
+  cv-processor-network:
+    driver: bridge
 
 volumes:
   postgres_data:
+  ollama_data:

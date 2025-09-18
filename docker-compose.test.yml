@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: cv-processor-postgres-test
+    environment:
+      POSTGRES_DB: cvprocessor_test
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - cv-processor-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d cvprocessor_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama-test:
+    image: ollama/ollama:latest
+    container_name: cv-processor-ollama-test
+    ports:
+      - "11437:11434"
+    volumes:
+      - ollama_test_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - cv-processor-test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_test_data:
+  ollama_test_data:
+
+networks:
+  cv-processor-test-network:
+    driver: bridge
