@@ -8,7 +8,7 @@ A Spring Boot application that processes CV documents using Large Language Model
 - **Maven 3.8+**
 - **Docker & Docker Compose**
 - **PostgreSQL** (automatically started with Docker Compose)
-- **Ollama** (local LLM model, no API key required)
+- **Ollama** (automatically started with Docker Compose)
 
 ## API Documentation
 
@@ -264,3 +264,4 @@ FILE_MAX_SIZE=10MB
 
 ## License
 This project is for internal development use.
+
