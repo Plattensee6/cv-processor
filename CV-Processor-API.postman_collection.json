@@ -1,0 +1,1193 @@
+{
+	"info": {
+		"_postman_id": "cv-processor-api-collection",
+		"name": "CV Processor API",
+		"description": "Comprehensive Postman collection for testing the CV Processing Application endpoints. This collection includes all API endpoints for file upload, CV processing, field extraction, validation, and monitoring.\n\n## Features:\n- Complete API endpoint coverage\n- Automated test scenarios with CV samples\n- Error handling and edge case testing\n- Automatic requestId management\n- Health checks and monitoring\n\n## Usage:\n1. Import this collection into Postman\n2. Set the baseUrl variable (default: http://localhost:8080)\n3. Run the test scenarios to validate the complete workflow\n4. Use the CV-1.md and CV-2.md files for file upload tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "cv-processor"
+	},
+	"item": [
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "Basic Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						},
+						"description": "Basic health check endpoint to verify application is running and accessible."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains status UP', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql('UP');",
+									"});",
+									"",
+									"pm.test('Response contains application name', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.application).to.eql('CV Processor');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Detailed Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health/detailed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"detailed"
+							]
+						},
+						"description": "Detailed health check with component status including database and LLM service status."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains components status', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.components).to.be.an('object');",
+									"    pm.expect(responseJson.components.database).to.eql('UP');",
+									"    pm.expect(responseJson.components['llm-service']).to.eql('UP');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Spring Boot Actuator Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Spring Boot actuator health endpoint for comprehensive application health monitoring."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Actuator health response is valid', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.be.oneOf(['UP', 'DOWN']);",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"description": "Health check endpoints for monitoring application status and component health."
+		},
+		{
+			"name": "File Upload",
+			"item": [
+				{
+					"name": "Upload CV File",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "CV file to upload (PDF, DOC, DOCX). Use CV-1.md or CV-2.md for testing."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"upload"
+							]
+						},
+						"description": "Upload a CV file for processing. Returns requestId for tracking the processing status."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains requestId', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.requestId).to.be.a('number');",
+									"    pm.globals.set('requestId', responseJson.requestId);",
+									"    console.log('Request ID set:', responseJson.requestId);",
+									"});",
+									"",
+									"pm.test('Response contains file information', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.fileName).to.be.a('string');",
+									"    pm.expect(responseJson.status).to.eql('UPLOADED');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Upload Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/status/{{requestId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"status",
+								"{{requestId}}"
+							]
+						},
+						"description": "Get the status of an uploaded file processing request. Use the requestId from the upload response."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains request information', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.requestId).to.be.a('number');",
+									"    pm.expect(responseJson.status).to.be.a('string');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "File Upload Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"health"
+							]
+						},
+						"description": "Health check for file upload service to verify it's operational."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service status is UP', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql('UP');",
+									"    pm.expect(responseJson.service).to.eql('File Upload Service');",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"description": "File upload and management endpoints for CV document processing."
+		},
+		{
+			"name": "CV Processing",
+			"item": [
+				{
+					"name": "Process CV (Extract Fields)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/process/{{requestId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"process",
+								"{{requestId}}"
+							]
+						},
+						"description": "Process uploaded CV and extract fields using LLM. This endpoint extracts Work Experience, Skills, Languages, and Profile information."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Processing completed successfully', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql('PROCESSED');",
+									"    pm.expect(responseJson.message).to.include('processed successfully');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Extracted Fields",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/process/{{requestId}}/fields",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"process",
+								"{{requestId}}",
+								"fields"
+							]
+						},
+						"description": "Get extracted fields for a processed CV. Returns Work Experience, Skills, Languages, and Profile information."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains extracted fields', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.extractedFields).to.be.an('object');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('workExperienceYears');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('skills');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('languages');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('profile');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "CV Processing Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/process/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"process",
+								"health"
+							]
+						},
+						"description": "Health check for CV processing service to verify LLM integration is operational."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service status is UP', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql('UP');",
+									"    pm.expect(responseJson.service).to.eql('CV Processing Service');",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"description": "CV processing and field extraction endpoints using LLM technology."
+		},
+		{
+			"name": "Complete Processing",
+			"item": [
+				{
+					"name": "Complete CV Processing (Extract + Validate)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/complete/{{requestId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"complete",
+								"{{requestId}}"
+							]
+						},
+						"description": "Complete CV processing: extract fields and validate against business rules. This is the main endpoint that combines extraction and validation."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains extracted fields', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.extractedFields).to.be.an('object');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('workExperienceYears');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('skills');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('languages');",
+									"    pm.expect(responseJson.extractedFields).to.have.property('profile');",
+									"});",
+									"",
+									"pm.test('Response contains validation results', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.validationResult).to.be.an('object');",
+									"    pm.expect(responseJson.validationResult).to.have.property('workExperienceValid');",
+									"    pm.expect(responseJson.validationResult).to.have.property('skillsValid');",
+									"    pm.expect(responseJson.validationResult).to.have.property('languagesValid');",
+									"    pm.expect(responseJson.validationResult).to.have.property('profileValid');",
+									"    pm.expect(responseJson.validationResult).to.have.property('overallValid');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Complete Processing Result",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/complete/{{requestId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"complete",
+								"{{requestId}}"
+							]
+						},
+						"description": "Get complete processing result with extracted fields and validation results for a previously processed CV."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains complete processing data', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('extractedFields');",
+									"    pm.expect(responseJson).to.have.property('validationResult');",
+									"    pm.expect(responseJson).to.have.property('requestId');",
+									"    pm.expect(responseJson).to.have.property('status');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Complete Processing Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cv/complete/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cv",
+								"complete",
+								"health"
+							]
+						},
+						"description": "Health check for complete processing service to verify end-to-end processing capability."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service status is UP', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql('UP');",
+									"    pm.expect(responseJson.service).to.eql('Complete Processing Service');",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"description": "Complete CV processing pipeline endpoints that combine field extraction and validation."
+		},
+		{
+			"name": "Metrics & Monitoring",
+			"item": [
+				{
+					"name": "Get Application Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"metrics"
+							]
+						},
+						"description": "Get basic application metrics including processing and validation success rates."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains metrics', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('processingSuccessRate');",
+									"    pm.expect(responseJson).to.have.property('validationSuccessRate');",
+									"    pm.expect(responseJson).to.have.property('timestamp');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Detailed Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/metrics/detailed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"metrics",
+								"detailed"
+							]
+						},
+						"description": "Get detailed application metrics with descriptions and additional context."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains detailed metrics', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('processing');",
+									"    pm.expect(responseJson).to.have.property('validation');",
+									"    pm.expect(responseJson.processing).to.have.property('successRate');",
+									"    pm.expect(responseJson.validation).to.have.property('successRate');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Metrics Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/metrics/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"metrics",
+								"health"
+							]
+						},
+						"description": "Health check for metrics service to verify monitoring capabilities."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Service status is UP', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql('UP');",
+									"    pm.expect(responseJson.service).to.eql('Metrics Service');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Spring Boot Actuator Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics"
+							]
+						},
+						"description": "Spring Boot actuator metrics endpoint for comprehensive application monitoring."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Actuator metrics response is valid', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('names');",
+									"    pm.expect(responseJson.names).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Prometheus Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/prometheus",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"prometheus"
+							]
+						},
+						"description": "Prometheus metrics endpoint for external monitoring system integration."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains Prometheus format', function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include('#');",
+									"    pm.expect(responseText).to.include('_total');",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"description": "Metrics and monitoring endpoints for application performance and health tracking."
+		},
+		{
+			"name": "Test Scenarios",
+			"item": [
+				{
+					"name": "Full CV Processing Workflow",
+					"item": [
+						{
+							"name": "1. Upload CV-1 (Marketing Manager)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "CV-1.md",
+											"description": "Marketing Manager CV - should fail validation (missing Java, GenAI)"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/cv/upload",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"cv",
+										"upload"
+									]
+								},
+								"description": "Upload CV-1 (Marketing Manager) - expected to fail validation due to missing Java skills and GenAI interest."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('CV-1 upload successful', function () {",
+											"    pm.response.to.have.status(200);",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.requestId).to.be.a('number');",
+											"    pm.globals.set('cv1RequestId', responseJson.requestId);",
+											"    console.log('CV-1 Request ID:', responseJson.requestId);",
+											"});"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "2. Complete Process CV-1",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/cv/complete/{{cv1RequestId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"cv",
+										"complete",
+										"{{cv1RequestId}}"
+									]
+								},
+								"description": "Complete processing of CV-1 - should show validation failures for skills and profile."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('CV-1 processing completed', function () {",
+											"    pm.response.to.have.status(200);",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.validationResult).to.be.an('object');",
+											"    ",
+											"    // CV-1 should fail validation (missing Java and GenAI)",
+											"    console.log('CV-1 Validation Results:');",
+											"    console.log('Skills Valid:', responseJson.validationResult.skillsValid);",
+											"    console.log('Profile Valid:', responseJson.validationResult.profileValid);",
+											"    console.log('Overall Valid:', responseJson.validationResult.overallValid);",
+											"    ",
+											"    // Store results for comparison",
+											"    pm.globals.set('cv1OverallValid', responseJson.validationResult.overallValid);",
+											"});"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "3. Upload CV-2 (Software Developer)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "CV-2.md",
+											"description": "Software Developer CV - should pass validation"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/cv/upload",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"cv",
+										"upload"
+									]
+								},
+								"description": "Upload CV-2 (Software Developer) - expected to pass validation with Java skills and GenAI interest."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('CV-2 upload successful', function () {",
+											"    pm.response.to.have.status(200);",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.requestId).to.be.a('number');",
+											"    pm.globals.set('cv2RequestId', responseJson.requestId);",
+											"    console.log('CV-2 Request ID:', responseJson.requestId);",
+											"});"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "4. Complete Process CV-2",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/cv/complete/{{cv2RequestId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"cv",
+										"complete",
+										"{{cv2RequestId}}"
+									]
+								},
+								"description": "Complete processing of CV-2 - should show validation success for all fields."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('CV-2 processing completed', function () {",
+											"    pm.response.to.have.status(200);",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.validationResult).to.be.an('object');",
+											"    ",
+											"    // CV-2 should pass validation",
+											"    console.log('CV-2 Validation Results:');",
+											"    console.log('Work Experience Valid:', responseJson.validationResult.workExperienceValid);",
+											"    console.log('Skills Valid:', responseJson.validationResult.skillsValid);",
+											"    console.log('Languages Valid:', responseJson.validationResult.languagesValid);",
+											"    console.log('Profile Valid:', responseJson.validationResult.profileValid);",
+											"    console.log('Overall Valid:', responseJson.validationResult.overallValid);",
+											"    ",
+											"    // Store results for comparison",
+											"    pm.globals.set('cv2OverallValid', responseJson.validationResult.overallValid);",
+											"});"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "5. Compare Validation Results",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/metrics",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"metrics"
+									]
+								},
+								"description": "Check metrics after processing both CVs to see validation success rates."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Metrics retrieved successfully', function () {",
+											"    pm.response.to.have.status(200);",
+											"    const responseJson = pm.response.json();",
+											"    ",
+											"    console.log('=== VALIDATION COMPARISON ===');",
+											"    console.log('CV-1 (Marketing Manager) Overall Valid:', pm.globals.get('cv1OverallValid'));",
+											"    console.log('CV-2 (Software Developer) Overall Valid:', pm.globals.get('cv2OverallValid'));",
+											"    console.log('Processing Success Rate:', responseJson.processingSuccessRate);",
+											"    console.log('Validation Success Rate:', responseJson.validationSuccessRate);",
+											"    ",
+											"    // Expected: CV-1 should fail, CV-2 should pass",
+											"    pm.expect(pm.globals.get('cv1OverallValid')).to.be.false;",
+											"    pm.expect(pm.globals.get('cv2OverallValid')).to.be.true;",
+											"});"
+										]
+									}
+								}
+							]
+						}
+					],
+					"description": "Complete workflow testing with both CV samples to validate the business rules."
+				},
+				{
+					"name": "Error Handling Tests",
+					"item": [
+						{
+							"name": "Upload Invalid File Type",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "test.txt",
+											"description": "Invalid file type - should return error"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/cv/upload",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"cv",
+										"upload"
+									]
+								},
+								"description": "Test error handling for invalid file types (only PDF, DOC, DOCX are allowed)."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Invalid file type rejected', function () {",
+											"    pm.response.to.have.status(400);",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson).to.have.property('error');",
+											"    pm.expect(responseJson.error).to.include('File upload failed');",
+											"});"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Process Non-existent Request",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/cv/complete/99999",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"cv",
+										"complete",
+										"99999"
+									]
+								},
+								"description": "Test error handling for non-existent request ID."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Non-existent request handled', function () {",
+											"    pm.response.to.have.status(400);",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson).to.have.property('error');",
+											"    pm.expect(responseJson.error).to.include('Complete CV processing failed');",
+											"});"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Get Status of Non-existent Request",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/cv/status/99999",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"cv",
+										"status",
+										"99999"
+									]
+								},
+								"description": "Test error handling when requesting status of non-existent request."
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Non-existent status request handled', function () {",
+											"    pm.response.to.have.status(404);",
+											"});"
+										]
+									}
+								}
+							]
+						}
+					],
+					"description": "Error handling and edge case testing to ensure robust API behavior."
+				}
+			],
+			"description": "Comprehensive test scenarios for the CV processing workflow including success and failure cases."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set timestamp for requests",
+					"pm.globals.set('timestamp', new Date().toISOString());",
+					"",
+					"// Log request details",
+					"console.log('=== REQUEST ===');",
+					"console.log('Method:', pm.request.method);",
+					"console.log('URL:', pm.request.url.toString());",
+					"console.log('Timestamp:', pm.globals.get('timestamp'));"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Common test script for all requests",
+					"pm.test('Response time is less than 10000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+					"});",
+					"",
+					"pm.test('Response has valid JSON', function () {",
+					"    if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+					"        pm.response.to.have.jsonBody();",
+					"    }",
+					"});",
+					"",
+					"// Log response details",
+					"console.log('=== RESPONSE ===');",
+					"console.log('Status Code:', pm.response.code);",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Extract requestId from upload responses",
+					"if (pm.request.url.path.includes('upload') && pm.response.code === 200) {",
+					"    const responseJson = pm.response.json();",
+					"    if (responseJson.requestId) {",
+					"        pm.globals.set('requestId', responseJson.requestId);",
+					"        console.log('Request ID set:', responseJson.requestId);",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Base URL for the CV Processor API. Change this to match your deployment environment."
+		},
+		{
+			"key": "requestId",
+			"value": "",
+			"type": "string",
+			"description": "Request ID from file upload - automatically set by tests"
+		},
+		{
+			"key": "cv1RequestId",
+			"value": "",
+			"type": "string",
+			"description": "Request ID for CV-1 (Marketing Manager) - set during workflow tests"
+		},
+		{
+			"key": "cv2RequestId",
+			"value": "",
+			"type": "string",
+			"description": "Request ID for CV-2 (Software Developer) - set during workflow tests"
+		}
+	]
+}
