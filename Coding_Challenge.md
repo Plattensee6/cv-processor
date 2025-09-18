@@ -1,0 +1,55 @@
+Overview 
+Your assignment is to develop a CV processing application that leverages Large Language 
+Models (LLMs) to extract specific fields from documents and validate the extracted data 
+according to established rules. 
+This task simulates a capability similar to the one being developed for our enterprise-level 
+product and is intended to evaluate your approach and problem-solving skills. 
+(Please note that our enterprise solution does not assess CVs; the attached CVs are 
+provided solely as samples for this imaginary solution.) 
+Your solution should demonstrate clear, logical thinking and effective problem-solving skills. 
+Please write clean, well-structured code that is easy to read and maintain; make sure to 
+include meaningful comments to explain your decisions, assumptions, and any complex 
+logic. Follow industry best practices—such as modularization and appropriate error 
+handling—and avoid known anti-patterns. We encourage you to document your approach 
+and describe any trade-offs or alternatives you considered during implementation. 
+Additionally, please provide instructions on how to run and test your solution. 
+Functional requirement 
+1. Document upload 
+Provide a REST endpoint to upload files. 
+2. Field Extraction 
+Use your preferred LLM to extract the following fields from the uploaded document: 
+• Work Experience 
+• Skills 
+• Languages 
+• Profile 
+3. Validation Rules 
+Apply the following validation rules to the extracted fields. 
+Each validation may be implemented either in Java or by utilizing an LLM, at your 
+discretion for each rule. 
+• Work Experience 
+Must be between 0 and 2 years. 
+
+
+• Skills 
+Must include both Java and LLMs. 
+• Languages 
+Must include both Hungarian and English. 
+• Profile 
+Should address the following aspirations (wording may vary): 
+▪ “I am interested in GenAI and would like to become an expert in it.” 
+▪ “I am interested in Java and would like to become an expert in it.” 
+4. Result 
+The endpoint must return a JSON response containing: 
+• The extracted field values. 
+• The result of each applied validation rule. 
+Technological requirement 
+• Java version 21 or higher 
+• Spring Boot version 3.2 or higher 
+• Any modern Large Language Model (LLM), utilizing the latest available version for the 
+selected model type (e.g., OpenAI GPT-4.1, Google Gemini Flash 2.5, etc.) 
+Submission 
+• Please upload your solution to GitHub under a private repository and invite the 
+following user 
+o coding-challenge@intuitech.studio 
+
+
