@@ -3,7 +3,7 @@ package com.intuitech.cvprocessor.infrastructure.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
-import com.intuitech.cvprocessor.infrastructure.config.HuggingFaceConfig;
+import com.intuitech.cvprocessor.infrastructure.config.OllamaConfig;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -15,99 +15,99 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 /**
- * Service for extracting CV fields using Hugging Face open-source models
+ * Service for extracting CV fields using Ollama local models
  * 
- * Handles LLM integration for field extraction with resilience patterns.
+ * Handles local LLM integration for field extraction with resilience patterns.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class HuggingFaceFieldExtractor {
+public class OllamaFieldExtractor {
 
     private final RestTemplate restTemplate;
-    private final HuggingFaceConfig huggingFaceConfig;
+    private final OllamaConfig ollamaConfig;
     private final PromptBuilder promptBuilder;
     private final ObjectMapper objectMapper;
 
     /**
-     * Extract fields from CV document text
+     * Extract fields from CV document text using Ollama
      * 
      * @param documentText the CV document text
      * @return extracted fields
      * @throws FieldExtractionException if extraction fails
      */
-    @Retry(name = "huggingface-extraction")
-    @CircuitBreaker(name = "huggingface-extraction")
+    @Retry(name = "ollama-extraction")
+    @CircuitBreaker(name = "ollama-extraction")
     public ExtractedFields extractFields(String documentText) throws FieldExtractionException {
-        log.info("Starting field extraction for document length: {}", documentText.length());
-
         try {
             // Build prompt
             String prompt = promptBuilder.buildFieldExtractionPrompt(documentText);
 
-            // Create request payload
+            // Create request payload for Ollama
             Map<String, Object> requestPayload = Map.of(
-                    "inputs", prompt,
-                    "parameters", Map.of(
-                            "max_new_tokens", huggingFaceConfig.getMaxTokens(),
-                            "temperature", huggingFaceConfig.getTemperature(),
-                            "return_full_text", false,
-                            "do_sample", true
+                    "model", ollamaConfig.getModel(),
+                    "prompt", prompt,
+                    "stream", false,
+                    "options", Map.of(
+                            "temperature", 0.1,
+                            "top_p", 0.9,
+                            "max_tokens", 2000
                     )
             );
 
             // Prepare headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(huggingFaceConfig.getApiKey());
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestPayload, headers);
 
-            // Call Hugging Face API using RestTemplate
-            log.debug("Calling Hugging Face API with model: {}", huggingFaceConfig.getModel());
-            
-            String url = "https://api-inference.huggingface.co/models/" + huggingFaceConfig.getModel();
+            // Call Ollama API
+            log.debug("Calling Ollama API with model: {} at {}", ollamaConfig.getModel(), ollamaConfig.getModelUrl());
             
             ResponseEntity<String> response = restTemplate.exchange(
-                    url,
+                    ollamaConfig.getModelUrl(),
                     HttpMethod.POST,
                     requestEntity,
                     String.class
             );
 
             if (response.getBody() == null || response.getBody().trim().isEmpty()) {
-                throw new FieldExtractionException("Empty response from Hugging Face API");
+                throw new FieldExtractionException("Empty response from Ollama API");
             }
 
-            log.debug("Received Hugging Face response: {}", response.getBody());
+            log.debug("Received Ollama response: {}", response.getBody());
 
             // Parse response
-            ExtractedFields extractedFields = parseExtractionResponse(response.getBody());
+            ExtractedFields extractedFields = parseOllamaResponse(response.getBody());
 
-            log.info("Successfully extracted fields from CV");
+            log.info("Successfully extracted fields from CV using Ollama");
             return extractedFields;
 
         } catch (Exception e) {
-            log.error("Field extraction failed: {}", e.getMessage(), e);
-            throw new FieldExtractionException("Failed to extract fields from CV", e);
+            log.error("Field extraction failed with Ollama: {}", e.getMessage(), e);
+            throw new FieldExtractionException("Failed to extract fields from CV using Ollama", e);
         }
     }
 
     /**
-     * Parse Hugging Face response into ExtractedFields object
+     * Parse Ollama response into ExtractedFields object
      */
-    private ExtractedFields parseExtractionResponse(String response) throws FieldExtractionException {
+    private ExtractedFields parseOllamaResponse(String response) throws FieldExtractionException {
         try {
-            // Clean the response - remove any extra text before/after JSON
-            String cleanedResponse = cleanJsonResponse(response);
+            JsonNode jsonNode = objectMapper.readTree(response);
             
-            JsonNode jsonNode = objectMapper.readTree(cleanedResponse);
+            // Ollama returns the generated text in the "response" field
+            String generatedText = jsonNode.get("response").asText();
+            
+            // Clean and parse the generated JSON
+            String cleanedResponse = cleanJsonResponse(generatedText);
+            JsonNode extractedJson = objectMapper.readTree(cleanedResponse);
 
             ExtractedFields.ExtractedFieldsBuilder builder = ExtractedFields.builder();
 
             // Parse work experience
-            if (jsonNode.has("workExperience")) {
-                JsonNode workExp = jsonNode.get("workExperience");
+            if (extractedJson.has("workExperience")) {
+                JsonNode workExp = extractedJson.get("workExperience");
                 if (workExp.has("years") && !workExp.get("years").isNull()) {
                     builder.workExperienceYears(workExp.get("years").asInt());
                 }
@@ -117,10 +117,10 @@ public class HuggingFaceFieldExtractor {
             }
 
             // Parse skills
-            if (jsonNode.has("skills") && !jsonNode.get("skills").isNull()) {
-                if (jsonNode.get("skills").isArray()) {
+            if (extractedJson.has("skills") && !extractedJson.get("skills").isNull()) {
+                if (extractedJson.get("skills").isArray()) {
                     StringBuilder skillsBuilder = new StringBuilder();
-                    for (JsonNode skill : jsonNode.get("skills")) {
+                    for (JsonNode skill : extractedJson.get("skills")) {
                         if (skillsBuilder.length() > 0) {
                             skillsBuilder.append(", ");
                         }
@@ -128,15 +128,15 @@ public class HuggingFaceFieldExtractor {
                     }
                     builder.skills(skillsBuilder.toString());
                 } else {
-                    builder.skills(jsonNode.get("skills").asText());
+                    builder.skills(extractedJson.get("skills").asText());
                 }
             }
 
             // Parse languages
-            if (jsonNode.has("languages") && !jsonNode.get("languages").isNull()) {
-                if (jsonNode.get("languages").isArray()) {
+            if (extractedJson.has("languages") && !extractedJson.get("languages").isNull()) {
+                if (extractedJson.get("languages").isArray()) {
                     StringBuilder languagesBuilder = new StringBuilder();
-                    for (JsonNode language : jsonNode.get("languages")) {
+                    for (JsonNode language : extractedJson.get("languages")) {
                         if (languagesBuilder.length() > 0) {
                             languagesBuilder.append(", ");
                         }
@@ -144,36 +144,40 @@ public class HuggingFaceFieldExtractor {
                     }
                     builder.languages(languagesBuilder.toString());
                 } else {
-                    builder.languages(jsonNode.get("languages").asText());
+                    builder.languages(extractedJson.get("languages").asText());
                 }
             }
 
             // Parse profile
-            if (jsonNode.has("profile") && !jsonNode.get("profile").isNull()) {
-                builder.profile(jsonNode.get("profile").asText());
+            if (extractedJson.has("profile") && !extractedJson.get("profile").isNull()) {
+                builder.profile(extractedJson.get("profile").asText());
             }
 
             return builder.build();
 
         } catch (Exception e) {
-            log.error("Failed to parse Hugging Face response: {}", e.getMessage());
-            throw new FieldExtractionException("Failed to parse extraction response", e);
+            log.error("Failed to parse Ollama response: {}", response, e);
+            throw new FieldExtractionException("Failed to parse Ollama response", e);
         }
     }
 
     /**
-     * Clean the response to extract valid JSON
+     * Clean JSON response by removing extra text
      */
     private String cleanJsonResponse(String response) {
-        // Find the first { and last } to extract JSON
+        // Remove any text before the first {
         int startIndex = response.indexOf('{');
-        int lastIndex = response.lastIndexOf('}');
-        
-        if (startIndex != -1 && lastIndex != -1 && lastIndex > startIndex) {
-            return response.substring(startIndex, lastIndex + 1);
+        if (startIndex == -1) {
+            throw new IllegalArgumentException("No JSON object found in response");
         }
         
-        return response;
+        // Find the last }
+        int lastIndex = response.lastIndexOf('}');
+        if (lastIndex == -1) {
+            throw new IllegalArgumentException("No closing brace found in response");
+        }
+        
+        return response.substring(startIndex, lastIndex + 1);
     }
 
     /**

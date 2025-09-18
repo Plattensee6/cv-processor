@@ -1,15 +1,15 @@
 package com.intuitech.cvprocessor.infrastructure.config;
 
-import ai.huggingface.HuggingFaceApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Configuration for Hugging Face integration
  * 
- * Sets up Hugging Face client with proper configuration for open-source models.
+ * Sets up RestTemplate for Hugging Face API calls with proper configuration.
  */
 @Configuration
 @Slf4j
@@ -31,21 +31,22 @@ public class HuggingFaceConfig {
     private Integer timeoutSeconds;
 
     /**
-     * Create Hugging Face API client bean
+     * Create RestTemplate bean for HTTP calls
      * 
-     * @return configured Hugging Face API client
+     * @return configured RestTemplate
      */
     @Bean
-    public HuggingFaceApi huggingFaceApi() {
-        log.info("Initializing Hugging Face API with model: {}", model);
+    public RestTemplate restTemplate() {
+        log.info("Initializing RestTemplate for Hugging Face API calls");
         
-        HuggingFaceApi.Builder builder = HuggingFaceApi.builder();
-        
-        if (apiKey != null && !apiKey.isEmpty()) {
-            builder.apiKey(apiKey);
-        }
-        
-        return builder.build();
+        return new RestTemplate();
+    }
+
+    /**
+     * Get configured API key
+     */
+    public String getApiKey() {
+        return apiKey;
     }
 
     /**
@@ -72,7 +73,7 @@ public class HuggingFaceConfig {
     /**
      * Get configured timeout in seconds
      */
-    public Integer getTimeoutSeconds() {
+    public Integer getTimeout() {
         return timeoutSeconds;
     }
 }
