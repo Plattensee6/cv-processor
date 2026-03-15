@@ -1,0 +1,160 @@
+{
+  "info": {
+    "name": "CV Processor - Auth & Admin",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "cv-processor-auth-admin-collection"
+  },
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"hr.admin@example.com\",\n  \"password\": \"ChangeMe123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin - List Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/users",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "users"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin - Create User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"new.hr@example.com\",\n  \"fullName\": \"New HR User\",\n  \"password\": \"ChangeMe123!\",\n  \"roles\": [\"HR_MANAGER\"]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/users",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "users"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin - Update User",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Updated HR User\",\n  \"enabled\": true,\n  \"locked\": false,\n  \"roles\": [\"HR_MANAGER\"]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/users/{{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "users", "{{userId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin - Get Settings",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/settings",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "settings"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin - Update Settings",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"defaultMinMatchPercentage\": \"80\",\n  \"maxFailedLoginAttempts\": \"5\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/settings",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "settings"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": "1"
+    }
+  ]
+}
+
