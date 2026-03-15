@@ -13,11 +13,30 @@ import org.springframework.web.client.RestTemplate;
 @ConfigurationProperties(prefix = "ollama")
 @Data
 public class OllamaConfig {
-    
+
+    /**
+     * Ollama host and port configuration.
+     */
     private String host = "localhost";
     private int port = 11434;
+
+    /**
+     * Model configuration.
+     */
     private String model = "llama3.2:3b";
     private int timeout = 120;
+
+    /**
+     * Generation parameters, configurable from application.yaml:
+     *
+     * ollama:
+     *   temperature: 0.1
+     *   top-p: 0.9
+     *   max-tokens: 2000
+     */
+    private double temperature = 0.1;
+    private double topP = 0.9;
+    private int maxTokens = 2000;
     
     /**
      * Get the full Ollama API URL

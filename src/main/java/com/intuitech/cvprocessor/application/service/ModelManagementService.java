@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ModelManagementService {
+public   ModelManagementService {
 
     private final RestTemplate restTemplate;
     private final OllamaConfig ollamaConfig;

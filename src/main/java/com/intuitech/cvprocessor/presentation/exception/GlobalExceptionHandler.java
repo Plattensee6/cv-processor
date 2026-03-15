@@ -1,6 +1,11 @@
 package com.intuitech.cvprocessor.presentation.exception;
 
-import com.intuitech.cvprocessor.domain.exception.*;
+import com.intuitech.cvprocessor.domain.exception.CVProcessingException;
+import com.intuitech.cvprocessor.domain.exception.DocumentParsingException;
+import com.intuitech.cvprocessor.domain.exception.FieldExtractionException;
+import com.intuitech.cvprocessor.domain.exception.FileValidationException;
+import com.intuitech.cvprocessor.domain.exception.ResourceNotFoundException;
+import com.intuitech.cvprocessor.domain.exception.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +16,7 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -119,6 +125,27 @@ public class GlobalExceptionHandler {
                 .build();
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    /**
+     * Handle downstream service availability issues (e.g. Ollama not reachable)
+     */
+    @ExceptionHandler(ResourceAccessException.class)
+    public ResponseEntity<ErrorResponse> handleResourceAccessException(
+            ResourceAccessException ex, HttpServletRequest request) {
+
+        log.error("Downstream service not available: {}", ex.getMessage(), ex);
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error("Service Unavailable")
+                .message("A kiszolgáló jelenleg nem elérhető. Kérjük, próbálja meg később újra.")
+                .errorCode("DOWNSTREAM_SERVICE_UNAVAILABLE")
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
     }
 
     /**
