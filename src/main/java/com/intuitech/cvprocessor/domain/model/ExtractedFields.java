@@ -1,6 +1,15 @@
 package com.intuitech.cvprocessor.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,12 +19,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-/**
- * Entity representing extracted fields from a CV
- * 
- * This entity stores the fields extracted by the LLM from CV documents.
- * It includes Work Experience, Skills, Languages, and Profile information.
- */
 @Entity
 @Table(name = "extracted_fields")
 @Data
@@ -28,7 +31,7 @@ public class ExtractedFields {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "cv_processing_request_id", nullable = false)
     private CVProcessingRequest cvProcessingRequest;
 
@@ -59,6 +62,6 @@ public class ExtractedFields {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToOne(mappedBy = "extractedFields", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "extractedFields", cascade = CascadeType.ALL, fetch = jakarta.persistence.FetchType.LAZY)
     private ValidationResult validationResult;
 }

@@ -1,6 +1,15 @@
 package com.intuitech.cvprocessor.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +22,7 @@ import java.util.List;
 
 /**
  * Entity representing validation results for extracted CV fields
- * 
+ *
  * This entity stores the results of business rule validation
  * for each extracted field from CV documents.
  */
@@ -29,7 +38,7 @@ public class ValidationResult {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "extracted_fields_id", nullable = false)
     private ExtractedFields extractedFields;
 
@@ -78,9 +87,6 @@ public class ValidationResult {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    /**
-     * Backward-compatible accessor expected by tests
-     */
     public Boolean getValid() {
         return overallValid;
     }
