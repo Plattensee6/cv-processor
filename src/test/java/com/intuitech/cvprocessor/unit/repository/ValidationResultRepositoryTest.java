@@ -3,7 +3,7 @@ package com.intuitech.cvprocessor.unit.repository;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.domain.model.ValidationResult;
-import com.intuitech.cvprocessor.infrastructure.repository.ValidationResultRepository;
+import com.intuitech.cvprocessor.feature.validation.repository.ValidationResultRepository;
 import com.intuitech.cvprocessor.util.MockDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

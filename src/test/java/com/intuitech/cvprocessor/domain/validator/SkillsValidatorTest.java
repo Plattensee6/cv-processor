@@ -1,6 +1,8 @@
 package com.intuitech.cvprocessor.domain.validator;
 
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
+import com.intuitech.cvprocessor.feature.validation.dto.ValidationResultDTO;
+import com.intuitech.cvprocessor.feature.validation.validator.SkillsValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

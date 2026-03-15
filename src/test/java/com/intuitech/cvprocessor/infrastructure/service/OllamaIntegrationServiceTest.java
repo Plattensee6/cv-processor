@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.infrastructure.config.OllamaConfig;
 import com.intuitech.cvprocessor.infrastructure.monitoring.OllamaMetrics;
-import com.intuitech.cvprocessor.application.service.FieldExtractor;
+import com.intuitech.cvprocessor.feature.cvprocessing.FieldExtractor;
+import com.intuitech.cvprocessor.integration.ollama.JsonFieldParser;
+import com.intuitech.cvprocessor.integration.ollama.OllamaIntegrationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -51,14 +56,17 @@ class OllamaIntegrationServiceTest {
         when(ollamaConfig.getModel()).thenReturn("llama3.2:3b");
         when(ollamaConfig.getModelUrl()).thenReturn("http://localhost:11434/api/generate");
         when(promptBuilder.buildFieldExtractionPrompt(testDocumentText)).thenReturn(testPrompt);
-        
+
+        List<JsonFieldParser> jsonFieldParsers = Collections.emptyList();
+
         // Manually create OllamaIntegrationService instance
         ollamaIntegrationService = new OllamaIntegrationService(
-            restTemplate, 
-            ollamaConfig, 
-            promptBuilder, 
-            objectMapper, 
-            ollamaMetrics
+                restTemplate,
+                ollamaConfig,
+                promptBuilder,
+                objectMapper,
+                ollamaMetrics,
+                jsonFieldParsers
         );
     }
 

@@ -1,11 +1,11 @@
 package com.intuitech.cvprocessor.unit.service;
 
-import com.intuitech.cvprocessor.application.service.ValidationService;
+import com.intuitech.cvprocessor.feature.validation.ValidationService;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
 import com.intuitech.cvprocessor.domain.model.ValidationResult;
-import com.intuitech.cvprocessor.domain.validator.ValidationResultDTO;
-import com.intuitech.cvprocessor.domain.validator.ValidatorRegistry;
-import com.intuitech.cvprocessor.infrastructure.repository.ValidationResultRepository;
+import com.intuitech.cvprocessor.feature.validation.dto.ValidationResultDTO;
+import com.intuitech.cvprocessor.feature.validation.registry.ValidatorRegistry;
+import com.intuitech.cvprocessor.feature.validation.repository.ValidationResultRepository;
 import com.intuitech.cvprocessor.util.MockDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
