@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  * Provides REST endpoints for monitoring Ollama service health and status.
  */
 @RestController
-@RequestMapping("/api/health/ollama")
+@RequestMapping("/api/v1/health/ollama")
 @RequiredArgsConstructor
 @Slf4j
 public class OllamaHealthController {

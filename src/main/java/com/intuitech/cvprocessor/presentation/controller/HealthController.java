@@ -16,7 +16,7 @@ import java.util.Map;
  * Provides endpoints for health checks and basic application information.
  */
 @RestController
-@RequestMapping("/api/health")
+@RequestMapping("/api/v1/health")
 @RequiredArgsConstructor
 @Slf4j
 public class HealthController {

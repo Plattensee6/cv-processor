@@ -16,7 +16,7 @@ import java.util.Map;
  * Provides endpoints for accessing application metrics and statistics.
  */
 @RestController
-@RequestMapping("/api/metrics")
+@RequestMapping("/api/v1/metrics")
 @RequiredArgsConstructor
 @Slf4j
 public class MetricsController {
