@@ -1,6 +1,6 @@
 package com.intuitech.cvprocessor.application.dto;
 
-import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,11 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * DTO for complete CV processing response
- * 
- * Contains all extracted fields and validation results.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,7 +16,7 @@ public class ProcessingResponseDTO {
     
     private Long requestId;
     private String fileName;
-    private CVProcessingRequest.ProcessingStatus status;
+    private ProcessingStatus status;
     private String message;
     private LocalDateTime processedAt;
     

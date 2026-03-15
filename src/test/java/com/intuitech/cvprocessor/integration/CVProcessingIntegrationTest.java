@@ -1,7 +1,8 @@
 package com.intuitech.cvprocessor.integration;
 
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
-import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.feature.cvprocessing.repository.CVProcessingRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -15,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @DataJpaTest
 @ActiveProfiles("test")
-class fCVProcessingIntegrationTest {
+class CVProcessingIntegrationTest {
 
     @Autowired
     private TestEntityManager entityManager;
@@ -32,7 +33,7 @@ class fCVProcessingIntegrationTest {
                 .fileSize(1024L)
                 .originalContent("test content")
                 .parsedText("parsed text")
-                .status(CVProcessingRequest.ProcessingStatus.UPLOADED)
+                .status(ProcessingStatus.UPLOADED)
                 .build();
 
         // When
@@ -44,7 +45,7 @@ class fCVProcessingIntegrationTest {
         CVProcessingRequest found = cvProcessingRequestRepository.findById(saved.getId()).orElse(null);
         assertNotNull(found);
         assertEquals("test.pdf", found.getFileName());
-        assertEquals(CVProcessingRequest.ProcessingStatus.UPLOADED, found.getStatus());
+        assertEquals(ProcessingStatus.UPLOADED, found.getStatus());
     }
 
     @Test
@@ -54,14 +55,14 @@ class fCVProcessingIntegrationTest {
                 .fileName("test1.pdf")
                 .contentType("application/pdf")
                 .fileSize(1024L)
-                .status(CVProcessingRequest.ProcessingStatus.UPLOADED)
+                .status(ProcessingStatus.UPLOADED)
                 .build();
 
         CVProcessingRequest request2 = CVProcessingRequest.builder()
                 .fileName("test2.pdf")
                 .contentType("application/pdf")
                 .fileSize(2048L)
-                .status(CVProcessingRequest.ProcessingStatus.COMPLETED)
+                .status(ProcessingStatus.COMPLETED)
                 .build();
 
         cvProcessingRequestRepository.save(request1);
@@ -69,7 +70,7 @@ class fCVProcessingIntegrationTest {
         entityManager.flush();
 
         // When
-        var uploadedRequests = cvProcessingRequestRepository.findByStatus(CVProcessingRequest.ProcessingStatus.UPLOADED);
+        var uploadedRequests = cvProcessingRequestRepository.findByStatus(ProcessingStatus.UPLOADED);
 
         // Then
         assertEquals(1, uploadedRequests.size());

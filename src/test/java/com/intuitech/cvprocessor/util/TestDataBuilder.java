@@ -1,6 +1,9 @@
 package com.intuitech.cvprocessor.util;
 
-import com.intuitech.cvprocessor.domain.model.*;
+import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
+import com.intuitech.cvprocessor.domain.model.ExtractedFields;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.domain.model.ValidationResult;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,7 +25,7 @@ public class TestDataBuilder {
         private String originalContent = "Test CV content";
         private String parsedText = "John Doe\nSoftware Engineer\n5 years experience";
 
-        private CVProcessingRequest.ProcessingStatus status = CVProcessingRequest.ProcessingStatus.UPLOADED;
+        private ProcessingStatus status = ProcessingStatus.UPLOADED;
         private String errorMessage;
         private LocalDateTime createdAt = LocalDateTime.now();
         private LocalDateTime updatedAt = LocalDateTime.now();
@@ -57,7 +60,7 @@ public class TestDataBuilder {
             return this;
         }
 
-        public CVProcessingRequestBuilder status(CVProcessingRequest.ProcessingStatus status) {
+        public CVProcessingRequestBuilder status(ProcessingStatus status) {
             this.status = status;
             return this;
         }

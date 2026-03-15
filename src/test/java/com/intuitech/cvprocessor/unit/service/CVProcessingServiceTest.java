@@ -1,11 +1,12 @@
 package com.intuitech.cvprocessor.unit.service;
 
-import com.intuitech.cvprocessor.application.service.CVProcessingService;
+import com.intuitech.cvprocessor.feature.cvprocessing.CVProcessingService;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
-import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
-import com.intuitech.cvprocessor.infrastructure.repository.ExtractedFieldsRepository;
-import com.intuitech.cvprocessor.application.service.FieldExtractor;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.feature.cvprocessing.repository.CVProcessingRequestRepository;
+import com.intuitech.cvprocessor.feature.cvprocessing.repository.ExtractedFieldsRepository;
+import com.intuitech.cvprocessor.feature.cvprocessing.FieldExtractor;
 import com.intuitech.cvprocessor.util.MockDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -68,7 +69,7 @@ class CVProcessingServiceTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.COMPLETED);
+        assertThat(result.getStatus()).isEqualTo(ProcessingStatus.COMPLETED);
         
         verify(cvProcessingRequestRepository, times(2)).save(any(CVProcessingRequest.class));
         verify(extractedFieldsRepository, times(1)).save(any(ExtractedFields.class));
@@ -126,7 +127,7 @@ class CVProcessingServiceTest {
         
         // Verify that the request status was updated to FAILED
         verify(cvProcessingRequestRepository, atLeastOnce()).save(argThat(request -> 
-                request.getStatus() == CVProcessingRequest.ProcessingStatus.FAILED &&
+                request.getStatus() == ProcessingStatus.FAILED &&
                 request.getErrorMessage().contains("Field extraction failed")
         ));
     }
@@ -150,7 +151,7 @@ class CVProcessingServiceTest {
         
         // Verify that the request status was updated to FAILED
         verify(cvProcessingRequestRepository, atLeastOnce()).save(argThat(request -> 
-                request.getStatus() == CVProcessingRequest.ProcessingStatus.FAILED &&
+                request.getStatus() == ProcessingStatus.FAILED &&
                 request.getErrorMessage().contains("Unexpected error")
         ));
     }

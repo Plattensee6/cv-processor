@@ -1,7 +1,8 @@
 package com.intuitech.cvprocessor.integration.api;
 
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
-import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.feature.cvprocessing.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.util.MockDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -66,7 +67,7 @@ class FileUploadControllerIntegrationTest {
         assertThat(cvProcessingRequestRepository.findAll()).hasSize(1);
         CVProcessingRequest savedRequest = cvProcessingRequestRepository.findAll().get(0);
         assertThat(savedRequest.getFileName()).isEqualTo("john-doe-cv.pdf");
-        assertThat(savedRequest.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
+        assertThat(savedRequest.getStatus()).isEqualTo(ProcessingStatus.UPLOADED);
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.intuitech.cvprocessor.presentation.controller;
 import com.intuitech.cvprocessor.application.dto.FileUploadResponseDTO;
 import com.intuitech.cvprocessor.application.service.FileUploadService;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -44,7 +45,7 @@ class FileUploadControllerTest {
                 .fileName("test.pdf")
                 .contentType("application/pdf")
                 .fileSize(12L)
-                .status(CVProcessingRequest.ProcessingStatus.UPLOADED)
+                .status(ProcessingStatus.UPLOADED)
                 .message("File uploaded successfully")
                 .uploadedAt(LocalDateTime.now())
                 .parsedText("test content")
@@ -87,7 +88,7 @@ class FileUploadControllerTest {
         FileUploadResponseDTO response = FileUploadResponseDTO.builder()
                 .requestId(1L)
                 .fileName("test.pdf")
-                .status(CVProcessingRequest.ProcessingStatus.UPLOADED)
+                .status(ProcessingStatus.UPLOADED)
                 .build();
 
         when(fileUploadService.getProcessingRequest(1L)).thenReturn(response);

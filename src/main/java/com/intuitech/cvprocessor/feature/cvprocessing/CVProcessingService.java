@@ -2,6 +2,7 @@ package com.intuitech.cvprocessor.feature.cvprocessing;
 
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
 import com.intuitech.cvprocessor.domain.model.ExtractedFields;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
 import com.intuitech.cvprocessor.feature.cvprocessing.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.feature.cvprocessing.repository.ExtractedFieldsRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,11 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service for processing CV documents
- *
- * Orchestrates the complete CV processing pipeline including field extraction.
- */
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -40,45 +38,63 @@ public class CVProcessingService {
 
         try {
             // Update status to extracting
-            request.setStatus(CVProcessingRequest.ProcessingStatus.EXTRACTING);
-            cvProcessingRequestRepository.save(request);
+            CVProcessingRequest extractingRequest = buildRequestWithStatus(request, ProcessingStatus.EXTRACTING, null);
+            CVProcessingRequest savedExtracting = cvProcessingRequestRepository.save(extractingRequest);
 
             // Extract fields using configured extractor
             log.info("Extracting fields with {}", fieldExtractor.getExtractorName());
             ExtractedFields extractedFields = fieldExtractor.extractFields(request.getParsedText());
 
-            // Link extracted fields to processing request
-            extractedFields.setCvProcessingRequest(request);
+            // Link extracted fields to processing request via builder
+            ExtractedFields toSave = ExtractedFields.builder()
+                    .cvProcessingRequest(savedExtracting)
+                    .workExperienceYears(extractedFields.getWorkExperienceYears())
+                    .workExperienceDetails(extractedFields.getWorkExperienceDetails())
+                    .skills(extractedFields.getSkills())
+                    .languages(extractedFields.getLanguages())
+                    .profile(extractedFields.getProfile())
+                    .build();
+            extractedFieldsRepository.save(toSave);
 
-            // Save extracted fields
-            extractedFieldsRepository.save(extractedFields);
-
-            // Update status to completed
-            request.setStatus(CVProcessingRequest.ProcessingStatus.COMPLETED);
-            cvProcessingRequestRepository.save(request);
+            CVProcessingRequest completedRequest = buildRequestWithStatus(savedExtracting, ProcessingStatus.COMPLETED, null);
+            CVProcessingRequest savedCompleted = cvProcessingRequestRepository.save(completedRequest);
 
             log.info("Successfully processed CV for request ID: {}", requestId);
-            return request;
+            return savedCompleted;
 
         } catch (FieldExtractor.FieldExtractionException e) {
             log.error("Field extraction failed for request ID {}: {}", requestId, e.getMessage());
 
-            // Update status to failed
-            request.setStatus(CVProcessingRequest.ProcessingStatus.FAILED);
-            request.setErrorMessage("Field extraction failed: " + e.getMessage());
-            cvProcessingRequestRepository.save(request);
+            CVProcessingRequest failedRequest = buildRequestWithStatus(request, ProcessingStatus.FAILED, "Field extraction failed: " + e.getMessage());
+            cvProcessingRequestRepository.save(failedRequest);
 
             throw new CVProcessingException("Field extraction failed", e);
         } catch (Exception e) {
             log.error("Unexpected error during CV processing for request ID {}: {}", requestId, e.getMessage(), e);
 
-            // Update status to failed
-            request.setStatus(CVProcessingRequest.ProcessingStatus.FAILED);
-            request.setErrorMessage("Unexpected error: " + e.getMessage());
-            cvProcessingRequestRepository.save(request);
+            CVProcessingRequest failedRequest = buildRequestWithStatus(request, ProcessingStatus.FAILED, "Unexpected error: " + e.getMessage());
+            cvProcessingRequestRepository.save(failedRequest);
 
             throw new CVProcessingException("Unexpected error during CV processing", e);
         }
+    }
+
+    private CVProcessingRequest buildRequestWithStatus(CVProcessingRequest request,
+                                                       ProcessingStatus status,
+                                                       String errorMessage) {
+        return CVProcessingRequest.builder()
+                .id(request.getId())
+                .fileName(request.getFileName())
+                .contentType(request.getContentType())
+                .fileSize(request.getFileSize())
+                .originalContent(request.getOriginalContent())
+                .parsedText(request.getParsedText())
+                .status(status)
+                .errorMessage(errorMessage != null ? errorMessage : request.getErrorMessage())
+                .createdAt(request.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .extractedFields(request.getExtractedFields())
+                .build();
     }
 
     /**
@@ -95,9 +111,6 @@ public class CVProcessingService {
                 .orElseThrow(() -> new CVProcessingException("Processing request not found: " + requestId));
     }
 
-    /**
-     * Custom exception for CV processing errors
-     */
     public static class CVProcessingException extends Exception {
         public CVProcessingException(String message) {
             super(message);

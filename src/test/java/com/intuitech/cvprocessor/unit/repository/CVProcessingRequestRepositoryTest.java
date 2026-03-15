@@ -1,7 +1,8 @@
 package com.intuitech.cvprocessor.unit.repository;
 
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
-import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.feature.cvprocessing.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.util.MockDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,22 +58,22 @@ class CVProcessingRequestRepositoryTest {
     @DisplayName("Should find all requests by status")
     void shouldFindAllRequestsByStatus() {
         // When
-        List<CVProcessingRequest> pendingRequests = repository.findByStatus(CVProcessingRequest.ProcessingStatus.UPLOADED);
-        List<CVProcessingRequest> completedRequests = repository.findByStatus(CVProcessingRequest.ProcessingStatus.COMPLETED);
-        List<CVProcessingRequest> failedRequests = repository.findByStatus(CVProcessingRequest.ProcessingStatus.FAILED);
+        List<CVProcessingRequest> pendingRequests = repository.findByStatus(ProcessingStatus.UPLOADED);
+        List<CVProcessingRequest> completedRequests = repository.findByStatus(ProcessingStatus.COMPLETED);
+        List<CVProcessingRequest> failedRequests = repository.findByStatus(ProcessingStatus.FAILED);
 
         // Then
         assertThat(pendingRequests).hasSize(1);
         assertThat(pendingRequests.get(0).getFileName()).isEqualTo("pending-cv.pdf");
-        assertThat(pendingRequests.get(0).getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
+        assertThat(pendingRequests.get(0).getStatus()).isEqualTo(ProcessingStatus.UPLOADED);
 
         assertThat(completedRequests).hasSize(1);
         assertThat(completedRequests.get(0).getFileName()).isEqualTo("completed-cv.pdf");
-        assertThat(completedRequests.get(0).getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.COMPLETED);
+        assertThat(completedRequests.get(0).getStatus()).isEqualTo(ProcessingStatus.COMPLETED);
 
         assertThat(failedRequests).hasSize(1);
         assertThat(failedRequests.get(0).getFileName()).isEqualTo("failed-cv.pdf");
-        assertThat(failedRequests.get(0).getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.FAILED);
+        assertThat(failedRequests.get(0).getStatus()).isEqualTo(ProcessingStatus.FAILED);
     }
 
     @Test
@@ -84,7 +85,7 @@ class CVProcessingRequestRepositoryTest {
         // Then
         assertThat(foundRequest).isNotNull();
         assertThat(foundRequest.getFileName()).isEqualTo("pending-cv.pdf");
-        assertThat(foundRequest.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
+        assertThat(foundRequest.getStatus()).isEqualTo(ProcessingStatus.UPLOADED);
     }
 
     @Test
@@ -114,7 +115,7 @@ class CVProcessingRequestRepositoryTest {
         // Then
         assertThat(retrievedRequest).isPresent();
         assertThat(retrievedRequest.get().getFileName()).isEqualTo("new-cv.pdf");
-        assertThat(retrievedRequest.get().getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
+        assertThat(retrievedRequest.get().getStatus()).isEqualTo(ProcessingStatus.UPLOADED);
     }
 
     @Test
@@ -125,14 +126,14 @@ class CVProcessingRequestRepositoryTest {
         assertThat(request).isNotNull();
 
         // When
-        request.setStatus(CVProcessingRequest.ProcessingStatus.EXTRACTING);
+        request.setStatus(ProcessingStatus.EXTRACTING);
         repository.save(request);
         entityManager.flush();
         entityManager.clear();
 
         // Then
         CVProcessingRequest updatedRequest = repository.findByFileName("pending-cv.pdf");
-        assertThat(updatedRequest.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.EXTRACTING);
+        assertThat(updatedRequest.getStatus()).isEqualTo(ProcessingStatus.EXTRACTING);
     }
 
     @Test
@@ -169,9 +170,9 @@ class CVProcessingRequestRepositoryTest {
     @DisplayName("Should count requests by status")
     void shouldCountRequestsByStatus() {
         // When
-        long pendingCount = repository.findByStatus(CVProcessingRequest.ProcessingStatus.UPLOADED).size();
-        long completedCount = repository.findByStatus(CVProcessingRequest.ProcessingStatus.COMPLETED).size();
-        long failedCount = repository.findByStatus(CVProcessingRequest.ProcessingStatus.FAILED).size();
+        long pendingCount = repository.findByStatus(ProcessingStatus.UPLOADED).size();
+        long completedCount = repository.findByStatus(ProcessingStatus.COMPLETED).size();
+        long failedCount = repository.findByStatus(ProcessingStatus.FAILED).size();
 
         // Then
         assertThat(pendingCount).isEqualTo(1);

@@ -1,6 +1,16 @@
 package com.intuitech.cvprocessor.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,12 +20,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-/**
- * Entity representing a CV processing request
- * 
- * This entity stores metadata about uploaded CV files and their processing status.
- * It serves as the foundation for all CV processing operations.
- */
 @Entity
 @Table(name = "cv_processing_requests")
 @Data
@@ -60,18 +64,6 @@ public class CVProcessingRequest {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToOne(mappedBy = "cvProcessingRequest", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "cvProcessingRequest", cascade = CascadeType.ALL, fetch = jakarta.persistence.FetchType.LAZY)
     private ExtractedFields extractedFields;
-
-    /**
-     * Enum representing the processing status of a CV request
-     */
-    public enum ProcessingStatus {
-        UPLOADED,
-        PARSING,
-        EXTRACTING,
-        VALIDATING,
-        COMPLETED,
-        FAILED
-    }
 }

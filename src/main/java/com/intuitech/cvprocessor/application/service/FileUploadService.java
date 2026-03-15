@@ -2,7 +2,8 @@ package com.intuitech.cvprocessor.application.service;
 
 import com.intuitech.cvprocessor.application.dto.FileUploadResponseDTO;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
-import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.feature.cvprocessing.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.infrastructure.service.DocumentParsingService;
 import com.intuitech.cvprocessor.infrastructure.service.FileValidationService;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-/**
- * Service for handling file upload operations
- * 
- * Orchestrates file validation, parsing, and storage operations.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -70,9 +66,6 @@ public class FileUploadService {
         }
     }
 
-    /**
-     * Create processing request from uploaded file
-     */
     private CVProcessingRequest createProcessingRequest(MultipartFile file, String parsedText) throws IOException {
         return CVProcessingRequest.builder()
                 .fileName(file.getOriginalFilename())
@@ -80,7 +73,7 @@ public class FileUploadService {
                 .fileSize(file.getSize())
                 .originalContent(new String(file.getBytes()))
                 .parsedText(parsedText)
-                .status(CVProcessingRequest.ProcessingStatus.UPLOADED)
+                .status(ProcessingStatus.UPLOADED)
                 .build();
     }
 
@@ -100,13 +93,6 @@ public class FileUploadService {
                 .build();
     }
 
-    /**
-     * Get processing request by ID
-     * 
-     * @param requestId the request ID
-     * @return the processing request
-     * @throws FileUploadException if request not found
-     */
     public FileUploadResponseDTO getProcessingRequest(Long requestId) throws FileUploadException {
         log.debug("Retrieving processing request: {}", requestId);
 
@@ -116,9 +102,6 @@ public class FileUploadService {
         return buildResponse(request);
     }
 
-    /**
-     * Custom exception for file upload errors
-     */
     public static class FileUploadException extends Exception {
         public FileUploadException(String message) {
             super(message);

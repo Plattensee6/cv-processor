@@ -1,6 +1,9 @@
 package com.intuitech.cvprocessor.util;
 
-import com.intuitech.cvprocessor.domain.model.*;
+import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
+import com.intuitech.cvprocessor.domain.model.ExtractedFields;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.domain.model.ValidationResult;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,7 +22,7 @@ public class MockDataFactory {
                 .fileName("john-doe-cv.pdf")
                 .contentType("application/pdf")
                 .fileSize(2048L)
-                .status(CVProcessingRequest.ProcessingStatus.UPLOADED)
+                .status(ProcessingStatus.UPLOADED)
                 .build();
     }
 
@@ -28,7 +31,7 @@ public class MockDataFactory {
                 .fileName("jane-smith-cv.pdf")
                 .contentType("application/pdf")
                 .fileSize(1536L)
-                .status(CVProcessingRequest.ProcessingStatus.COMPLETED)
+                .status(ProcessingStatus.COMPLETED)
                 .parsedText("Jane Smith\nSenior Developer\n8 years experience in Java")
                 .build();
     }
@@ -38,7 +41,7 @@ public class MockDataFactory {
                 .fileName("invalid-file.txt")
                 .contentType("text/plain")
                 .fileSize(512L)
-                .status(CVProcessingRequest.ProcessingStatus.FAILED)
+                .status(ProcessingStatus.FAILED)
                 .errorMessage("Unsupported file type")
                 .build();
     }

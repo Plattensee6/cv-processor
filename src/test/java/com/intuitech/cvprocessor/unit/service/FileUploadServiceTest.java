@@ -3,7 +3,8 @@ package com.intuitech.cvprocessor.unit.service;
 import com.intuitech.cvprocessor.application.dto.FileUploadResponseDTO;
 import com.intuitech.cvprocessor.application.service.FileUploadService;
 import com.intuitech.cvprocessor.domain.model.CVProcessingRequest;
-import com.intuitech.cvprocessor.infrastructure.repository.CVProcessingRequestRepository;
+import com.intuitech.cvprocessor.domain.model.ProcessingStatus;
+import com.intuitech.cvprocessor.feature.cvprocessing.repository.CVProcessingRequestRepository;
 import com.intuitech.cvprocessor.infrastructure.service.DocumentParsingService;
 import com.intuitech.cvprocessor.infrastructure.service.FileValidationService;
 import com.intuitech.cvprocessor.util.MockDataFactory;
@@ -77,7 +78,7 @@ class FileUploadServiceTest {
         assertThat(result.getRequestId()).isEqualTo(1L);
         assertThat(result.getFileName()).isEqualTo("john-doe-cv.pdf");
         assertThat(result.getContentType()).isEqualTo("application/pdf");
-        assertThat(result.getStatus()).isEqualTo(CVProcessingRequest.ProcessingStatus.UPLOADED);
+        assertThat(result.getStatus()).isEqualTo(ProcessingStatus.UPLOADED);
         assertThat(result.getMessage()).isEqualTo("File uploaded and parsed successfully");
         assertThat(result.getParsedText()).isEqualTo(parsedText);
 
@@ -184,7 +185,7 @@ class FileUploadServiceTest {
                 request.getContentType().equals("application/pdf") &&
                 request.getFileSize() == 24L &&
                 request.getParsedText().equals(parsedText) &&
-                request.getStatus() == CVProcessingRequest.ProcessingStatus.UPLOADED
+                request.getStatus() == ProcessingStatus.UPLOADED
         ));
     }
 
