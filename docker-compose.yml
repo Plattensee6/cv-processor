@@ -93,6 +93,25 @@ services:
       - cv-processor-network
     restart: unless-stopped
 
+  cv-processor-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: cv-processor-web
+    environment:
+      VITE_PROXY_TARGET: http://cv-processor-app:8080
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    depends_on:
+      cv-processor-app:
+        condition: service_started
+    networks:
+      - cv-processor-network
+    restart: unless-stopped
+
 # Monitoring removed for simplicity - using Spring Actuator only
 
 networks:

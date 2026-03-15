@@ -8,5 +8,10 @@
     <!-- Include all changesets -->
     <include file="changesets/001-create-tables.xml" relativeToChangelogFile="true"/>
     <include file="changesets/002-insert-test-data.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/003-create-auth-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/004-create-job-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/005-add-password-reset-fields.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/006-insert-default-hr-role.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/007-insert-default-users.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

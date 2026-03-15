@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: CV Processor API
+  version: 1.0.0
+  description: REST API for CV processing, jobs, auth and admin
+
+paths: {}
+
+components:
+  schemas:
+    # ----- Auth -----
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    RegisterRequest:
+      type: object
+      required: [email, fullName, password]
+      properties:
+        email: { type: string, format: email }
+        fullName: { type: string }
+        password: { type: string }
+
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email }
+
+    ForgotPasswordResponse:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        resetToken: { type: string, nullable: true }
+
+    ResetPasswordRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token: { type: string }
+        newPassword: { type: string }
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+
+    AuthResponse:
+      type: object
+      required: [accessToken, tokenType]
+      properties:
+        accessToken: { type: string }
+        tokenType: { type: string, example: Bearer }
+
+    # ----- Simple error (controller-level) -----
+    ErrorMessage:
+      type: object
+      properties:
+        message: { type: string }
+
+    # ----- Global API error (exception handler) -----
+    ApiErrorResponse:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        status: { type: integer }
+        error: { type: string }
+        message: { type: string }
+        errorCode: { type: string, nullable: true }
+        path: { type: string, nullable: true }
+        fieldErrors: { type: object, additionalProperties: { type: string }, nullable: true }
+        traceId: { type: string, nullable: true }
+
+    # ----- Jobs (public) -----
+    JobSummaryDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        title: { type: string }
+        location: { type: string }
+        employmentType: { type: string }
+
+    ApplicationResponse:
+      type: object
+      required: [applicationId, message]
+      properties:
+        applicationId: { type: integer, format: int64 }
+        message: { type: string }
+        cvRequestId: { type: integer, format: int64, nullable: true }
+
+    # ----- Jobs (admin) -----
+    UpsertJobPostingRequest:
+      type: object
+      properties:
+        title: { type: string }
+        location: { type: string }
+        employmentType: { type: string }
+        description: { type: string, nullable: true }
+        requirements: { type: string, nullable: true }
+
+    JobPostingDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        title: { type: string }
+        location: { type: string }
+        employmentType: { type: string }
+        active: { type: boolean }
+        description: { type: string, nullable: true }
+        requirements: { type: string, nullable: true }
+
+    # ----- Users (admin) -----
+    CreateUserRequest:
+      type: object
+      required: [email, fullName, password]
+      properties:
+        email: { type: string, format: email }
+        fullName: { type: string }
+        password: { type: string }
+        roles: { type: array, items: { type: string } }
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        fullName: { type: string }
+        enabled: { type: boolean }
+        locked: { type: boolean }
+        roles: { type: array, items: { type: string } }
+
+    UserSummaryDTO:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        email: { type: string }
+        fullName: { type: string }
+        enabled: { type: boolean }
+        locked: { type: boolean }
+        roles: { type: array, items: { type: string } }
+
+    # ----- Admin settings -----
+    UpdateResponse:
+      type: object
+      properties:
+        message: { type: string }
+
+    # ----- CV / File -----
+    ProcessingStatus:
+      type: string
+      enum: [UPLOADED, PARSING, EXTRACTING, VALIDATING, COMPLETED, FAILED]
+
+    FileUploadResponseDTO:
+      type: object
+      properties:
+        requestId: { type: integer, format: int64 }
+        fileName: { type: string }
+        contentType: { type: string, nullable: true }
+        fileSize: { type: integer, format: int64, nullable: true }
+        status: { $ref: '#/components/schemas/ProcessingStatus' }
+        message: { type: string, nullable: true }
+        uploadedAt: { type: string, format: date-time, nullable: true }
+        parsedText: { type: string, nullable: true }
+
+    ExtractedFieldsDTO:
+      type: object
+      properties:
+        workExperienceYears: { type: integer, nullable: true }
+        workExperienceDetails: { type: string, nullable: true }
+        skills: { type: string, nullable: true }
+        languages: { type: string, nullable: true }
+        profile: { type: string, nullable: true }
+        extractedAt: { type: string, format: date-time, nullable: true }
+
+    ValidationResultDTO:
+      type: object
+      properties:
+        workExperienceValid: { type: boolean, nullable: true }
+        workExperienceMessage: { type: string, nullable: true }
+        skillsValid: { type: boolean, nullable: true }
+        skillsMessage: { type: string, nullable: true }
+        languagesValid: { type: boolean, nullable: true }
+        languagesMessage: { type: string, nullable: true }
+        profileValid: { type: boolean, nullable: true }
+        profileMessage: { type: string, nullable: true }
+        overallValid: { type: boolean, nullable: true }
+        validatedAt: { type: string, format: date-time, nullable: true }
+
+    ProcessingResponseDTO:
+      type: object
+      properties:
+        requestId: { type: integer, format: int64 }
+        fileName: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/ProcessingStatus' }
+        message: { type: string, nullable: true }
+        processedAt: { type: string, format: date-time, nullable: true }
+        extractedFields: { $ref: '#/components/schemas/ExtractedFieldsDTO' }
+        validationResult: { $ref: '#/components/schemas/ValidationResultDTO' }

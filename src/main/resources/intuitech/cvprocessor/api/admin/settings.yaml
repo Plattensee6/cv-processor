@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: CV Processor - Admin Settings API
+  version: 1.0.0
+
+paths:
+  /api/admin/settings:
+    get:
+      summary: Get all admin settings
+      operationId: getSettings
+      responses:
+        '200':
+          description: Key-value settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsMap'
+    put:
+      summary: Update admin settings
+      operationId: updateSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsMap'
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateResponse'
+
+components:
+  schemas:
+    SettingsMap:
+      type: object
+      additionalProperties:
+        type: string
+
+    UpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+

@@ -10,10 +10,10 @@ COPY pom.xml .
 # Download dependencies (this layer will be cached if pom.xml doesn't change)
 RUN mvn dependency:go-offline -B
 
-# Copy source code
+# Copy source code (includes src/main/resources/api/openapi.yaml for DTO generation)
 COPY src ./src
 
-# Build the application
+# Build the application (runs generate-sources → OpenAPI DTOs, then compile & package)
 RUN mvn clean package -DskipTests
 
 # Runtime stage

@@ -39,6 +39,12 @@ spring:
     database-change-log-lock-table: DATABASECHANGELOGLOCK
     # Additional Liquibase settings for faster startup
 
+security:
+  jwt:
+    # Dev-only secret; override via SECURITY_JWT_SECRET in production
+    secret: ${SECURITY_JWT_SECRET:this_is_a_dev_only_jwt_secret_32_chars_min_for_dev}
+    access-token-ttl-seconds: 1800
+
 # Local Model Configuration (Ollama)
 ollama:
   host: ${OLLAMA_HOST:localhost}
@@ -140,6 +146,11 @@ spring:
     database-change-log-lock-table: DATABASECHANGELOGLOCK
     # Additional Liquibase settings for faster startup
 
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:this_is_a_dev_only_jwt_secret_32_chars_min_for_dev}
+    access-token-ttl-seconds: 1800
+
 # Local Model Configuration (Ollama)
 ollama:
   host: ${OLLAMA_HOST:localhost}
@@ -239,6 +250,11 @@ spring:
     database-change-log-table: DATABASECHANGELOG
     database-change-log-lock-table: DATABASECHANGELOGLOCK
     # Additional Liquibase settings for faster startup
+
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:this_is_a_dev_only_jwt_secret_32_chars_min_for_dev}
+    access-token-ttl-seconds: 1800
 
 # Local Model Configuration (Ollama)
 ollama:

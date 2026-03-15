@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="004-create-job-postings-and-applications" author="cv-processor">
+
+        <createTable tableName="job_postings">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location" type="VARCHAR(200)"/>
+            <column name="employment_type" type="VARCHAR(50)"/>
+            <column name="description" type="TEXT"/>
+            <column name="requirements" type="TEXT"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="job_applications">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="job_posting_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_job_applications_job_posting"
+                             referencedTableName="job_postings" referencedColumnNames="id"/>
+            </column>
+            <column name="applicant_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicant_email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicant_phone" type="VARCHAR(50)"/>
+            <column name="cv_processing_request_id" type="BIGINT"/>
+            <column name="submitted_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="job_postings" indexName="idx_job_postings_active_created_at">
+            <column name="active"/>
+            <column name="created_at"/>
+        </createIndex>
+
+        <createIndex tableName="job_applications" indexName="idx_job_applications_job_posting_id">
+            <column name="job_posting_id"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
